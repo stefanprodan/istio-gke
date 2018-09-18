@@ -2,6 +2,14 @@
 
 This guide walks you through setting up Istio on Google Kubernetes Engine.
 
+At the end of this guide you will be running Istio with the following characteristics:
+
+* secure Istio ingress gateway with Let’s Encrypt TLS
+* encrypted communication between Kubernetes workloads with Istio mutual TLS
+* Jaeger tracing 
+* Prometheus and Grafana monitoring
+* canary deployments, A/B testing and traffic mirroring capabilities
+
 ### Labs
 
 * [Prerequisites - client tools](/docs/istio/01-prerequisites.md)
@@ -27,8 +35,8 @@ At the end of this guide you will be running OpenFaaS with the following charact
 
 ### Labs
 
-[Configure OpenFaaS mutual TLS](/docs/openfaas/01-mtls-config.md)
-[Configure OpenFaaS access policies](/docs/openfaas/02-mixer-rules.md)
-[Install OpenFaaS with Helm](/docs/openfaas/03-openfaas-setup.md)
-[Configure OpenFaaS Gateway to receive external traffic](/docs/openfaas/04-gateway-config.md)
-[Canary deployments for OpenFaaS functions](/docs/openfaas/05-canary.md)
+* [Configure OpenFaaS mutual TLS](/docs/openfaas/01-mtls-config.md)
+* [Configure OpenFaaS access policies](/docs/openfaas/02-mixer-rules.md)
+* [Install OpenFaaS with Helm](/docs/openfaas/03-openfaas-setup.md)
+* [Configure OpenFaaS Gateway to receive external traffic](/docs/openfaas/04-gateway-config.md)
+* [Canary deployments for OpenFaaS functions](/docs/openfaas/05-canary.md)
