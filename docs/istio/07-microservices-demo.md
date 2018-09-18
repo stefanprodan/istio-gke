@@ -4,6 +4,15 @@ To experiment with different traffic routing techniques
 I've created a Helm chart for [podinfo](https://github.com/stefanprodan/k8s-podinfo) that lets you chain multiple 
 services and wraps all the Istio objects needs for A/B testing and canary deployments.
 
+Using the podinfo chart you will be installing three microservices: frontend, backend and data store. 
+Each of these services can have two versions running in parallel, the versions are called blue and green.
+The assumption is that for the frontend you'll be running A/B testing based on the user agent HTTP header. 
+The green frontend is not backwards compatible with the blue backend so you'll route all requests from the green 
+frontend to the green backend. For the data store you'll be running performance testing. Both backend versions are 
+compatible with the blue and green data store so you'll be splitting the traffic between blue and green data stores 
+and compare the requests latency and error rate to determine if the green store performs 
+better than the blue one.
+
 Add podinfo Helm repository:
 
 ```bash
