@@ -37,3 +37,5 @@ Save your credentials in faas-cli store:
 ```bash
 echo $password | faas-cli login -g https://openfaas.example.com -u admin --password-stdin
 ```
+
+Next: [Canary deployments for OpenFaaS functions](05-canary.md)

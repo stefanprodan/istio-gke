@@ -61,3 +61,5 @@ Verify that the wildcard DNS is working (replace `example.com` with your domain)
 ```bash
 watch host test.example.com
 ```
+
+Next: [Install Istio with Helm](04-istio-setup.md)

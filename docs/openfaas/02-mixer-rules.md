@@ -80,3 +80,5 @@ Save the above resources as of-functions-rules.yaml and then apply it:
 ```bash
 kubectl apply -f ./of-functions-rules.yaml
 ```
+
+Next: [Install OpenFaaS with Helm](03-openfaas-setup.md)

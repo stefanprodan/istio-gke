@@ -39,3 +39,4 @@ Install the `helm` command-line tool:
 brew install kubernetes-helm
 ```
 
+Next: [GKE cluster setup](02-gke-setup.md)

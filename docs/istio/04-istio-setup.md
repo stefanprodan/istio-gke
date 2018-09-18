@@ -84,3 +84,5 @@ Verify that Istio workloads are running:
 ```bash
 kubectl -n istio-system get pods
 ```
+
+Next: [Configure Istio Gateway with Let's Encrypt wildcard certificate](05-letsencrypt-setup.md)

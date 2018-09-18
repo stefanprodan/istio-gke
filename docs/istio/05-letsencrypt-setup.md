@@ -142,3 +142,5 @@ kubectl -n istio-system delete pods -l istio=ingressgateway
 Note that Istio gateway doesn't reload the certificates from the TLS secret on cert-manager renewal. 
 Since the GKE cluster is made out of preemptible VMs the gateway pods will be replaced once every 24h, if your not using 
 preemptible nodes then you need to manually kill the gateway pods every two months before the certificate expires.
+
+Next: [Expose services outside the service mesh](06-grafana-config.md)

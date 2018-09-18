@@ -90,3 +90,5 @@ Save the above resource as of-functions-mtls.yaml and then apply it:
 ```bash
 kubectl apply -f ./of-functions-mtls.yaml
 ```
+
+Next: [Configure OpenFaaS access policies](02-mixer-rules.md)

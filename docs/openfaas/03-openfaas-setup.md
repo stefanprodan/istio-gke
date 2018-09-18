@@ -37,3 +37,5 @@ Verify that OpenFaaS workloads are running:
 ```bash
 kubectl -n openfaas get pods
 ```
+
+Next: [Configure OpenFaaS Gateway to receive external traffic](04-gateway-config.md)

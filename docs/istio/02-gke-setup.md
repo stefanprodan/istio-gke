@@ -40,3 +40,5 @@ Validate your setup with:
 ```bash
 kubectl get nodes -o wide
 ```
+
+Next: [Cloud DNS setup](03-clouddns-setup.md)
