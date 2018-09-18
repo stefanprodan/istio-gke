@@ -2,7 +2,7 @@
 
 This guide walks you through setting up Istio on Google Kubernetes Engine.
 
-![istio-letsencrypt](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/istio-overview.png)
+![istio](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/istio-gcp-overview.png)
 
 At the end of this guide you will be running Istio with the following characteristics:
 
@@ -21,7 +21,7 @@ At the end of this guide you will be running Istio with the following characteri
 * [Configure Istio Gateway with Let's Encrypt wildcard certificate](/docs/istio/05-letsencrypt-setup.md)
 * [Expose services outside the service mesh](/docs/istio/06-grafana-config.md)
 
-## OpenFaaS
+## OpenFaaS service mesh walkthrough
 
 This guide walks you through setting up OpenFaaS with Istio on Google Kubernetes Engine.
 
