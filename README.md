@@ -20,6 +20,7 @@ At the end of this guide you will be running Istio with the following characteri
 * [Install Istio with Helm](/docs/istio/04-istio-setup.md)
 * [Configure Istio Gateway with Let's Encrypt wildcard certificate](/docs/istio/05-letsencrypt-setup.md)
 * [Expose services outside the service mesh](/docs/istio/06-grafana-config.md)
+* [A/B testing and canary deployments microservices demo](/docs/istio/07-microservices-demo.md)
 
 ## OpenFaaS service mesh walkthrough
 

@@ -41,3 +41,4 @@ x-envoy-upstream-service-time: 3
 server: envoy
 ```
 
+Next: [A/B testing and canary deployments demo](/docs/istio/07-microservices-demo.md)
