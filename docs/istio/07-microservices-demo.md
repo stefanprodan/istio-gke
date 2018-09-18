@@ -1,5 +1,9 @@
 # Microservices demo: A/B testing and canary deployments
 
+To experiment with different traffic routing techniques 
+I've created a Helm chart for [podinfo](https://github.com/stefanprodan/k8s-podinfo) that lets you chain multiple 
+services and wraps all the Istio objects needs for A/B testing and canary deployments.
+
 Add podinfo Helm repository:
 
 ```bash
@@ -23,7 +27,7 @@ Save the above resource as demo.yaml and then apply it:
 kubectl apply -f ./demo.yaml
 ```
 
-Enable mTLS for the `demo` namespace:
+Enable mutual TLS for the `demo` namespace:
 
 ```yaml
 apiVersion: authentication.istio.io/v1alpha1
@@ -57,7 +61,7 @@ kubectl apply -f ./demo-mtls.yaml
 
 ![initial-state](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/routing-initial-state.png)
 
-Frontend:
+Create a frontend release exposed outside the service mesh on the podinfo sub-domain (replace `example.com` with your domain):
 
 ```yaml
 host: podinfo.example.com
@@ -82,7 +86,7 @@ helm install --name frontend sp/podinfo-istio \
 -f ./frontend.yaml
 ```
 
-Backend:
+Create a backend release:
 
 ```yaml
 host: backend
@@ -105,7 +109,7 @@ helm install --name backend sp/podinfo-istio \
 -f ./backend.yaml
 ```
 
-Data store:
+Create a store release:
 
 ```yaml
 host: store
@@ -120,22 +124,21 @@ green:
   replicas: 0
 ```
 
-Save the above resource as data.yaml and then install it:
+Save the above resource as store.yaml and then install it:
 
 ```bash
 helm install --name store sp/podinfo-istio \
 --namespace demo \
--f ./data.yaml
+-f ./store.yaml
 ```
 
 ### Desired state
 
 ![desired-state](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/routing-desired-state.png)
 
-Change the frontend definition to:
+Change the frontend definition to route traffic coming from Safari users to the green deployment:
 
 ```yaml
-# expose the frontend deployment outside the cluster
 host: podinfo.example.com
 exposeHost: true
 
@@ -171,7 +174,8 @@ helm upgrade --install frontend sp/podinfo-istio \
 -f ./frontend.yaml
 ```
 
-Change the backend definition to:
+Change the backend definition to receive traffic based on source labels. The blue frontend will be routed to the blue
+backend and the green frontend to the green backend:
 
 ```yaml
 # expose the backend deployment inside the cluster on backend.demo
@@ -201,7 +205,7 @@ helm upgrade --install backend sp/podinfo-istio \
 -f ./backend.yaml
 ```
 
-Change the store definition to:
+Change the store definition to route 80% of the traffic to the blue deployment and 20% to the green one:
 
 ```yaml
 # expose the store deployment inside the cluster on store.demo
@@ -214,7 +218,7 @@ blue:
   weight: 80
 
 green:
-  replicas: 2
+  replicas: 1
   image: quay.io/stefanprodan/podinfo:1.2.1
 ```
 
