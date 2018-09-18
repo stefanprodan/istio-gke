@@ -2,7 +2,7 @@
 
 This guide walks you through setting up Istio on Google Kubernetes Engine.
 
-![istio-letsencrypt](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/istio-cert-manager-gcp.png)
+![istio-letsencrypt](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/istio-overview.png)
 
 At the end of this guide you will be running Istio with the following characteristics:
 
