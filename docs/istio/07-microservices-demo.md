@@ -53,7 +53,7 @@ Save the above resource as demo-mtls.yaml and then apply it:
 kubectl apply -f ./demo-mtls.yaml
 ```
 
-### A/B Testing initial state
+### Initial state
 
 ![initial-state](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/routing-initial-state.png)
 
@@ -77,9 +77,9 @@ green:
 Save the above resource as frontend.yaml and then install it:
 
 ```bash
-helm upgrade --install frontend sp/podinfo-istio \
+helm install --name frontend sp/podinfo-istio \
 --namespace demo \
-- f ./frontend.yaml
+-f ./frontend.yaml
 ```
 
 Backend:
@@ -100,9 +100,9 @@ green:
 Save the above resource as backend.yaml and then install it:
 
 ```bash
-helm upgrade --install backend sp/podinfo-istio \
+helm install --name backend sp/podinfo-istio \
 --namespace demo \
-- f ./backend.yaml
+-f ./backend.yaml
 ```
 
 Data store:
@@ -123,16 +123,16 @@ green:
 Save the above resource as data.yaml and then install it:
 
 ```bash
-helm upgrade --install store sp/podinfo-istio \
+helm install --name store sp/podinfo-istio \
 --namespace demo \
-- f ./data.yaml
+-f ./data.yaml
 ```
 
-### A/B Testing desired state
+### Desired state
 
 ![desired-state](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/routing-desired-state.png)
 
-Frontend:
+Change the frontend definition to:
 
 ```yaml
 # expose the frontend deployment outside the cluster
@@ -163,7 +163,15 @@ green:
   backend: http://backend:9898/api/echo
 ```
 
-Backend:
+Save the above resource and apply it:
+
+```bash
+helm upgrade --install frontend sp/podinfo-istio \
+--namespace demo \
+-f ./frontend.yaml
+```
+
+Change the backend definition to:
 
 ```yaml
 # expose the backend deployment inside the cluster on backend.demo
@@ -185,7 +193,15 @@ green:
   backend: http://store:9898/api/echo
 ```
 
-Data store:
+Save the above resource and apply it:
+
+```bash
+helm upgrade --install backend sp/podinfo-istio \
+--namespace demo \
+-f ./backend.yaml
+```
+
+Change the store definition to:
 
 ```yaml
 # expose the store deployment inside the cluster on store.demo
@@ -200,4 +216,12 @@ blue:
 green:
   replicas: 2
   image: quay.io/stefanprodan/podinfo:1.2.1
+```
+
+Save the above resource and apply it:
+
+```bash
+helm upgrade --install store sp/podinfo-istio \
+--namespace demo \
+-f ./store.yaml
 ```
