@@ -13,7 +13,9 @@ compatible with the blue and green data store so you'll be splitting the traffic
 and compare the requests latency and error rate to determine if the green store performs 
 better than the blue one.
 
-Add podinfo Helm repository:
+### Deploy the blue version
+
+Add the podinfo Helm repository:
 
 ```bash
 helm repo add sp https://stefanprodan.github.io/k8s-podinfo
@@ -36,8 +38,6 @@ Save the above resource as demo.yaml and then apply it:
 kubectl apply -f ./demo.yaml
 ```
 
-### Deploy the blue version
-
 ![initial-state](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/routing-initial-state.png)
 
 Create a frontend release exposed outside the service mesh on the podinfo sub-domain (replace `example.com` with your domain):
@@ -48,7 +48,7 @@ exposeHost: true
 
 blue:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.1.1
+  tag: "1.1.1"
   message: "Greetings from the blue frontend"
   backend: http://backend:9898/api/echo
 
@@ -72,7 +72,7 @@ host: backend
 
 blue:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.1.1
+  tag: "1.1.1"
   backend: http://store:9898/api/echo
 
 green:
@@ -95,7 +95,7 @@ host: store
 
 blue:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.1.1
+  tag: "1.1.1"
   weight: 100
 
 green:
@@ -161,13 +161,13 @@ exposeHost: true
 
 blue:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.1.1
+  tag: "1.1.1"
   message: "Greetings from the blue frontend"
   backend: http://backend:9898/api/echo
 
 green:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.2.0
+  tag: "1.2.0"
   routing:
     # target Safari
     - match:
@@ -195,17 +195,16 @@ Change the backend definition to receive traffic based on source labels. The blu
 backend and the green frontend to the green backend:
 
 ```yaml
-# expose the backend deployment inside the cluster on backend.demo
 host: backend
 
 blue:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.1.1
+  tag: "1.1.1"
   backend: http://store:9898/api/echo
 
 green:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.2.0
+  tag: "1.2.0"
   routing:
     # target green callers
     - match:
@@ -225,18 +224,17 @@ helm upgrade --install backend sp/podinfo-istio \
 Change the store definition to route 80% of the traffic to the blue deployment and 20% to the green one:
 
 ```yaml
-# expose the store deployment inside the cluster on store.demo
 host: store
 
 # load balance 80/20 between blue and green
 blue:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.1.1
+  tag: "1.1.1"
   weight: 80
 
 green:
   replicas: 1
-  image: quay.io/stefanprodan/podinfo:1.2.0
+  tag: "1.2.0"
 ```
 
 Save the above resource and apply it:
