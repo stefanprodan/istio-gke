@@ -46,7 +46,8 @@ metadata:
   namespace: demo
 spec:
   peers:
-  - mtls: {}
+  - mtls:
+      mode: PERMISSIVE
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
@@ -153,6 +154,31 @@ kubectl -n istio-system port-forward deployment/istio-tracing 16686:16686
 Navigate to `http://localhost:16686` and select `store` from the service dropdown. You should see a trace for each ping.
 
 ![jaeger-trace](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/jaeger-trace-list.png)
+
+Istio tracing is able to capture the ping call spanning across all microservices because podinfo forwards the Zipkin HTTP 
+headers. When a HTTP request reaches the Istio Gateway, Envoy will inject a series of headers used for tracing. When podinfo 
+calls a backend service, will copy the headers from the incoming HTTP request:
+
+```go
+func copyTracingHeaders(from *http.Request, to *http.Request) {
+	headers := []string{
+		"x-request-id",
+		"x-b3-traceid",
+		"x-b3-spanid",
+		"x-b3-parentspanid",
+		"x-b3-sampled",
+		"x-b3-flags",
+		"x-ot-span-context",
+	}
+
+	for i := range headers {
+		headerValue := from.Header.Get(headers[i])
+		if len(headerValue) > 0 {
+			to.Header.Set(headers[i], headerValue)
+		}
+	}
+}
+```
 
 ### Desired state
 
