@@ -36,7 +36,7 @@ Save the above resource as demo.yaml and then apply it:
 kubectl apply -f ./demo.yaml
 ```
 
-### Initial state
+### Deploy the blue version
 
 ![initial-state](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/routing-initial-state.png)
 
@@ -149,7 +149,7 @@ func copyTracingHeaders(from *http.Request, to *http.Request) {
 }
 ```
 
-### Desired state
+### Deploy the green version
 
 ![desired-state](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/routing-desired-state.png)
 
@@ -303,7 +303,7 @@ Save the above resource as demo-rules.yaml and then apply it:
 kubectl apply -f ./demo-rules.yaml
 ```
 
-Now if try to call the data store from the frontend container Istio Mixer will deny access:
+Now if you try to call the data store from the frontend container Istio Mixer will deny access:
 
 ```bash
 kubectl -n demo exec -it frontend-blue-675b4dff4b-xhg9d -c podinfod sh
@@ -316,3 +316,6 @@ The permission denied error can be observed in Grafana. Open the Istio Workload 
 podinfo-blue workload from the dropdown, scroll to outbound services and you'll see the HTTP 403 errors:
 
 ![grafana-403](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/grafana-403-errors.png)
+
+Once you have the Mixer rules in place you could create an alert for HTTP 403 errors with Prometheus and Alertmanager 
+to be notified about suspicious activities inside the service mesh.
