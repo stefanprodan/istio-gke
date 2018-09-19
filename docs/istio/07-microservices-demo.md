@@ -36,37 +36,6 @@ Save the above resource as demo.yaml and then apply it:
 kubectl apply -f ./demo.yaml
 ```
 
-Enable mutual TLS for the `demo` namespace:
-
-```yaml
-apiVersion: authentication.istio.io/v1alpha1
-kind: Policy
-metadata:
-  name: default
-  namespace: demo
-spec:
-  peers:
-  - mtls:
-      mode: PERMISSIVE
----
-apiVersion: networking.istio.io/v1alpha3
-kind: DestinationRule
-metadata:
-  name: default
-  namespace: demo
-spec:
-  host: "*.demo.svc.cluster.local"
-  trafficPolicy:
-    tls:
-      mode: ISTIO_MUTUAL
-```
-
-Save the above resource as demo-mtls.yaml and then apply it:
-
-```bash
-kubectl apply -f ./demo-mtls.yaml
-```
-
 ### Initial state
 
 ![initial-state](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/routing-initial-state.png)
@@ -277,3 +246,73 @@ helm upgrade --install store sp/podinfo-istio \
 --namespace demo \
 -f ./store.yaml
 ```
+
+### Restrict access with Mixer rules
+
+Let's assume the frontend service has a vulnerability and a bad actor can execute arbitrary commands in the frontend container.
+If someone gains access to the frontend service, from there he/she can issue API calls to the backend and data store service.
+
+In order to simulate this you can exec into the frontend container and curl the data store API:
+
+```bash
+kubectl -n demo exec -it frontend-blue-675b4dff4b-xhg9d -c podinfod sh
+
+~ $ curl -v http://store:9898
+* Connected to store (10.31.250.154) port 9898 (#0)
+```
+
+There is no reason why the frontend service should have access to the data store, only the backend service should be 
+able to issue API calls to the store service. With Istio you can define access rules and restrict access based on source and 
+destination.
+
+Let's create an Istio config that denies access to the data store unless the caller is the backend service:
+
+```yaml
+apiVersion: config.istio.io/v1alpha2
+kind: denier
+metadata:
+  name: denyhandler
+  namespace: demo
+spec:
+  status:
+    code: 7
+    message: Not allowed
+---
+apiVersion: config.istio.io/v1alpha2
+kind: checknothing
+metadata:
+  name: denyrequest
+  namespace: demo
+spec:
+---
+apiVersion: config.istio.io/v1alpha2
+kind: rule
+metadata:
+  name: denystore
+  namespace: demo
+spec:
+  match:  destination.labels["app"] == "store" && source.labels["app"] != "backend"
+  actions:
+  - handler: denyhandler.denier
+    instances: [ denyrequest.checknothing ]
+```
+
+Save the above resource as demo-rules.yaml and then apply it:
+
+```bash
+kubectl apply -f ./demo-rules.yaml
+```
+
+Now if try to call the data store from the frontend container Istio Mixer will deny access:
+
+```bash
+kubectl -n demo exec -it frontend-blue-675b4dff4b-xhg9d -c podinfod sh
+
+~ $ watch curl -s http://store:9898
+PERMISSION_DENIED:denyhandler.denier.demo:Not allowed
+```
+
+The permission denied error can be observed in Grafana. Open the Istio Workload dashboard, select the demo namespace and
+podinfo-blue workload from the dropdown, scroll to outbound services and you'll see the HTTP 403 errors:
+
+![grafana-403](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/grafana-403-errors.png)
