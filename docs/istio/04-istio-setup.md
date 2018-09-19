@@ -6,6 +6,13 @@ Download the latest Istio release:
 curl -L https://git.io/getLatestIstio | sh -
 ```
 
+Navigate to `istio-x.x.x` dir and copy the Istio CLI in your bin:
+
+```bash
+cd istio-1.0.2/
+sudo cp ./bin/istioctl /usr/local/bin/istioctl
+```
+
 Create a service account and a cluster role binding for Tiller:
 
 ```bash

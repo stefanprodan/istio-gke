@@ -4,7 +4,6 @@ Kubernetes namespaces alone offer only a logical separation between workloads.
 To prohibit functions from calling each other or from reaching 
 the OpenFaaS core services we need to create Istio Mixer rules.
 
-
 Deny access to OpenFaaS core services from the `openfaas-fn` namespace except for system functions:
 
 ```yaml

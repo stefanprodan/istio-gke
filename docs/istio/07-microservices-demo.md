@@ -78,7 +78,7 @@ exposeHost: true
 
 blue:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.2.0
+  image: quay.io/stefanprodan/podinfo:1.1.1
   message: "Greetings from the blue frontend"
   backend: http://backend:9898/api/echo
 
@@ -102,7 +102,7 @@ host: backend
 
 blue:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.2.0
+  image: quay.io/stefanprodan/podinfo:1.1.1
   backend: http://store:9898/api/echo
 
 green:
@@ -125,7 +125,7 @@ host: store
 
 blue:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.2.0
+  image: quay.io/stefanprodan/podinfo:1.1.1
   weight: 100
 
 green:
@@ -141,6 +141,19 @@ helm install --name store sp/podinfo-istio \
 -f ./store.yaml
 ```
 
+Open `https://podinfo.exmaple.com` in your browser, you should see a greetings message from the blue version.
+Clicking on the ping button will make a call that spans across all microservices.
+
+Access Jaeger dashboard using port forwarding:
+
+```bash
+kubectl -n istio-system port-forward deployment/istio-tracing 16686:16686 
+```
+
+Navigate to `http://localhost:16686` and select `store` from the service dropdown. You should see a trace for each ping.
+
+![jaeger-trace](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/jaeger-trace-list.png)
+
 ### Desired state
 
 ![desired-state](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/routing-desired-state.png)
@@ -153,13 +166,13 @@ exposeHost: true
 
 blue:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.2.0
+  image: quay.io/stefanprodan/podinfo:1.1.1
   message: "Greetings from the blue frontend"
   backend: http://backend:9898/api/echo
 
 green:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.2.1
+  image: quay.io/stefanprodan/podinfo:1.2.0
   routing:
     # target Safari
     - match:
@@ -170,7 +183,7 @@ green:
     - match:
       - headers:
           x-api-version:
-            regex: "^(v{0,1})1\\.2\\.([1-9]).*"
+            regex: "^(v{0,1})1\\.2\\.([0-9]).*"
   message: "Greetings from the green frontend"
   backend: http://backend:9898/api/echo
 ```
@@ -192,12 +205,12 @@ host: backend
 
 blue:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.2.0
+  image: quay.io/stefanprodan/podinfo:1.1.1
   backend: http://store:9898/api/echo
 
 green:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.2.1
+  image: quay.io/stefanprodan/podinfo:1.2.0
   routing:
     # target green callers
     - match:
@@ -223,12 +236,12 @@ host: store
 # load balance 80/20 between blue and green
 blue:
   replicas: 2
-  image: quay.io/stefanprodan/podinfo:1.2.0
+  image: quay.io/stefanprodan/podinfo:1.1.1
   weight: 80
 
 green:
   replicas: 1
-  image: quay.io/stefanprodan/podinfo:1.2.1
+  image: quay.io/stefanprodan/podinfo:1.2.0
 ```
 
 Save the above resource and apply it:
