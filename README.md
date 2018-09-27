@@ -1,5 +1,7 @@
 # Istio service mesh walkthrough 
 
+## Istio GKE setup
+
 This guide walks you through setting up Istio on Google Kubernetes Engine.
 
 ![istio](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/istio-gcp-overview.png)
@@ -20,7 +22,11 @@ At the end of this guide you will be running Istio with the following characteri
 * [Install Istio with Helm](/docs/istio/04-istio-setup.md)
 * [Configure Istio Gateway with Let's Encrypt wildcard certificate](/docs/istio/05-letsencrypt-setup.md)
 * [Expose services outside the service mesh](/docs/istio/06-grafana-config.md)
-* [A/B testing and canary deployments microservices demo](/docs/istio/07-microservices-demo.md)
+
+## Deployment strategies labs
+
+* [A/B testing for a micro-service stack with Helm](/docs/apps/01-ab-testing-helm.md)
+* [Automated canary deployments gated by Prometheus with Steerer](/docs/apps/02-canary-steerer.md)
 
 ## OpenFaaS service mesh walkthrough
 

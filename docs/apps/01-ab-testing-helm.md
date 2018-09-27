@@ -1,4 +1,4 @@
-# Microservices demo: A/B testing and canary deployments
+# A/B testing with Istio and Helm
 
 To experiment with different traffic routing techniques 
 I've created a Helm chart for [podinfo](https://github.com/stefanprodan/k8s-podinfo) that lets you chain multiple 
