@@ -23,10 +23,18 @@ At the end of this guide you will be running Istio with the following characteri
 * [Configure Istio Gateway with Let's Encrypt wildcard certificate](/docs/istio/05-letsencrypt-setup.md)
 * [Expose services outside the service mesh](/docs/istio/06-grafana-config.md)
 
-## Deployment strategies labs
+## Deployment strategies walkthrough
+
+At the end of this guide you will be deploying a series of micro-services with the following characteristics:
+
+* A/B testing for frontend services
+* Source/Destination based routing for backend services
+* Progressive deployments gated by Prometheus 
+
+### Labs
 
 * [A/B testing for a micro-service stack with Helm](/docs/apps/01-ab-testing-helm.md)
-* [Automated canary deployments gated by Prometheus with Steerer](/docs/apps/02-canary-steerer.md)
+* [Automated canary deployments with Steerer](/docs/apps/02-canary-steerer.md)
 
 ## OpenFaaS service mesh walkthrough
 

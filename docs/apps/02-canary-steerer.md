@@ -1,11 +1,11 @@
 # Automated canary deployments with Istio and Prometheus
 
-Steerer is a Kubernetes operator that automates the promotion of canary deployments
-using Istio routing for traffic shifting and Prometheus metrics for canary analysis.
+[Steerer](https://github.com/stefanprodan/steerer) is a Kubernetes operator that automates the promotion of
+canary deployments using Istio routing for traffic shifting and Prometheus metrics for canary analysis.
 
 ### Install 
 
-Deploy Steerer in the `istio-system` using Helm:
+Deploy Steerer in the `istio-system` namespace using Helm:
 
 ```bash
 # add Steerer Helm repo
@@ -51,7 +51,7 @@ Gated rollout stages:
 
 Create a test namespace with Istio sidecard injection enabled:
 
-```bash
+```yaml
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -133,7 +133,7 @@ spec:
     targetPort: http
 ```
 
-Create the canary deployment, service and horizontal pod auto-scalar:
+Create the canary deployment and service:
 
 ```yaml
 apiVersion: apps/v1
@@ -216,7 +216,6 @@ spec:
 
 Create the canary horizontal pod auto-scalar:
 
-
 ```yaml
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
@@ -241,7 +240,7 @@ spec:
       targetAverageValue: 200Mi
 ```
 
-Create a virtual service (replace the internet domain with your own):
+Create a virtual service (replace `example.com` with your own domain):
 
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
@@ -337,5 +336,5 @@ Events:
 During the rollout you can generate HTTP 500 errors to test if Steerer pauses the rollout:
 
 ```bash
-watch -n 1 curl https://<domain>/status/500
+watch -n 1 curl https://app.example.com/status/500
 ```
