@@ -1,4 +1,4 @@
-# Istio service mesh walkthrough 
+# Istio service mesh guides 
 
 ## Istio GKE setup
 
@@ -23,7 +23,11 @@ At the end of this guide you will be running Istio with the following characteri
 * [Configure Istio Gateway with Let's Encrypt wildcard certificate](/docs/istio/05-letsencrypt-setup.md)
 * [Expose services outside the service mesh](/docs/istio/06-grafana-config.md)
 
-## Deployment strategies walkthrough
+## Progressive delivery walkthrough
+
+This guide shows you how to route traffic between different versions of a service and how to automate canary deployments.
+
+![steerer-overview](https://raw.githubusercontent.com/stefanprodan/steerer/master/docs/diagrams/steerer-overview.png)
 
 At the end of this guide you will be deploying a series of micro-services with the following characteristics:
 
