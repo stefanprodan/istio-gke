@@ -317,3 +317,5 @@ podinfo-blue workload from the dropdown, scroll to outbound services and you'll 
 
 Once you have the Mixer rules in place you could create an alert for HTTP 403 errors with Prometheus and Alertmanager 
 to be notified about suspicious activities inside the service mesh.
+
+Next: [Canary deployments automation](/docs/apps/02-canary-steerer.md)
