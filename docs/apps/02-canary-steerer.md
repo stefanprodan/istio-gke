@@ -3,7 +3,7 @@
 [Steerer](https://github.com/stefanprodan/steerer) is a Kubernetes operator that automates the promotion of
 canary deployments using Istio routing for traffic shifting and Prometheus metrics for canary analysis.
 
-### Install 
+### Install Steerer
 
 Deploy Steerer in the `istio-system` namespace using Helm:
 
@@ -17,8 +17,6 @@ helm upgrade --install steerer steerer/steerer \
 --set metricsServer=http://prometheus.istio-system:9090 \
 --set controlLoopInterval=1m
 ```
-
-### Usage
 
 Steerer requires two Kubernetes deployments: one for the version you want to upgrade called _primary_ and one for the _canary_.
 Each deployment must have a corresponding ClusterIP service that exposes a port named http or https.
@@ -36,7 +34,7 @@ Gated rollout stages:
 * increase canary traffic weight percentage from 0% to 10%
 * check canary HTTP success rate
     * halt rollout if percentage is under the specified threshold
-* increase canary traffic wight by 10% till it reaches 100% 
+* increase canary traffic wight by 10% (step wight) till it reaches 100% (max weight) 
     * halt rollout while canary request success rate is under the threshold
     * halt rollout while canary request duration P99 is over the threshold
     * halt rollout if the primary or canary deployment becomes unhealthy 
@@ -50,197 +48,32 @@ Gated rollout stages:
 * mark rollout as finished
 * wait for the canary deployment to be updated (revision bump) and start over
 
-### Example
+You can change the canary analysis max weight and the step wight size in the rollout custom resource.
 
-Create a test namespace with Istio sidecard injection enabled:
+### Automated canary analysis and promotion
 
-```yaml
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: test
-  labels:
-    istio-injection: enabled
+Create a test namespace with Istio sidecar injection enabled:
+
+```bash
+export REPO=https://raw.githubusercontent.com/stefanprodan/steerer/master
+
+kubectl apply -f ${REPO}/artifacts/namespaces/test.yaml
 ```
 
-Create the primary deployment and service:
+Create the primary deployment, service and hpa:
 
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: podinfo
-  namespace: test
-  labels:
-    app: podinfo
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: podinfo
-  template:
-    metadata:
-      annotations:
-        prometheus.io/scrape: "true"
-      labels:
-        app: podinfo
-    spec:
-      containers:
-      - name: podinfod
-        image: quay.io/stefanprodan/podinfo:1.1.1
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 9898
-          name: http
-        command:
-        - ./podinfo
-        - --port=9898
-        - --level=info
-        env:
-        - name: PODINFO_UI_COLOR
-          value: blue
-        livenessProbe:
-          exec:
-            command:
-            - podcli
-            - check
-            - http
-            - localhost:9898/healthz
-        readinessProbe:
-          exec:
-            command:
-            - podcli
-            - check
-            - http
-            - localhost:9898/readyz
-        resources:
-          requests:
-            cpu: 1m
-            memory: 16Mi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: podinfo
-  namespace: test
-  labels:
-    app: podinfo
-spec:
-  type: ClusterIP
-  selector:
-    app: podinfo
-  ports:
-  - name: http
-    port: 9898
-    protocol: TCP
-    targetPort: http
+```bash
+kubectl apply -f ${REPO}/artifacts/workloads/primary-deployment.yaml
+kubectl apply -f ${REPO}/artifacts/workloads/primary-service.yaml
+kubectl apply -f ${REPO}/artifacts/workloads/primary-hpa.yaml
 ```
 
-Create the canary deployment and service:
+Create the canary deployment, service and hpa:
 
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: podinfo-canary
-  namespace: test
-  labels:
-    app: podinfo-canary
-spec:
-  replicas: 1
-  strategy:
-    rollingUpdate:
-      maxUnavailable: 0
-    type: RollingUpdate
-  selector:
-    matchLabels:
-      app: podinfo-canary
-  template:
-    metadata:
-      annotations:
-        prometheus.io/scrape: "true"
-      labels:
-        app: podinfo-canary
-    spec:
-      containers:
-      - name: podinfod
-        image: quay.io/stefanprodan/podinfo:1.2.0
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 9898
-          name: http
-          protocol: TCP
-        command:
-        - ./podinfo
-        - --port=9898
-        - --level=info
-        env:
-        - name: PODINFO_UI_COLOR
-          value: green
-        livenessProbe:
-          exec:
-            command:
-            - podcli
-            - check
-            - http
-            - localhost:9898/healthz
-        readinessProbe:
-          exec:
-            command:
-            - podcli
-            - check
-            - http
-            - localhost:9898/readyz
-        resources:
-          limits:
-            cpu: 1000m
-            memory: 256Mi
-          requests:
-            cpu: 10m
-            memory: 16Mi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: podinfo-canary
-  namespace: test
-  labels:
-    app: podinfo-canary
-spec:
-  type: ClusterIP
-  selector:
-    app: podinfo-canary
-  ports:
-  - name: http
-    port: 9898
-    protocol: TCP
-    targetPort: http
-```
-
-Create the canary horizontal pod auto-scalar:
-
-```yaml
-apiVersion: autoscaling/v2beta1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: podinfo-canary
-  namespace: test
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: podinfo-canary
-  minReplicas: 2
-  maxReplicas: 3
-  metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      targetAverageUtilization: 99
-  - type: Resource
-    resource:
-      name: memory
-      targetAverageValue: 200Mi
+```bash
+kubectl apply -f ${REPO}/artifacts/workloads/canary-deployment.yaml
+kubectl apply -f ${REPO}/artifacts/workloads/canary-service.yaml
+kubectl apply -f ${REPO}/artifacts/workloads/canary-hpa.yaml
 ```
 
 Create a virtual service (replace `example.com` with your own domain):
@@ -274,6 +107,12 @@ spec:
     timeout: 30s
 ```
 
+Save the above resource as podinfo-vt.yaml and then apply it:
+
+```bash
+kubectl apply -f ./podinfo-vt.yaml
+```
+
 Create a rollout custom resource:
 
 ```yaml
@@ -284,31 +123,40 @@ metadata:
   namespace: test
 spec:
   targetKind: Deployment
-  primary:
-    # deployment name
+  virtualService:
     name: podinfo
-    # clusterIP service name
+  primary:
+    name: podinfo
     host: podinfo
   canary:
     name: podinfo-canary
     host: podinfo-canary
-  virtualService:
-    name: podinfo
+  canaryAnalysis:
+    # max traffic percentage routed to canary
+    # percentage (0-100)
+    maxWeight: 100
     # canary increment step
     # percentage (0-100)
-    weight: 10
-  metrics:
-  - name: istio_requests_total
-    # minimum req success rate (non 5xx responses)
-    # percentage (0-100)
-    threshold: 99
-    interval: 1m
-  - name: istio_request_duration_seconds_bucket
-    # maximum req duration P99
-    # milliseconds
-    threshold: 500
-    interval: 1m
+    stepWeight: 10
+    metrics:
+    - name: istio_requests_total
+      # minimum req success rate (non 5xx responses)
+      # percentage (0-100)
+      threshold: 99
+      interval: 1m
+    - name: istio_request_duration_seconds_bucket
+      # maximum req duration P99
+      # milliseconds
+      threshold: 500
+      interval: 1m
 ```
+Save the above resource as podinfo-rollout.yaml and then apply it:
+
+```bash
+kubectl apply -f ./podinfo-rollout.yaml
+```
+
+![steerer-canary](https://raw.githubusercontent.com/stefanprodan/steerer/master/docs/diagrams/steerer-canary.png)
 
 Rollout output:
 
