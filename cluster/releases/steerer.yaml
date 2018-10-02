@@ -4,7 +4,7 @@ metadata:
   name: steerer
   namespace: istio-system
   annotations:
-    flux.weave.works/automated: "true"
+    flux.weave.works/automated: "false"
 spec:
   releaseName: steerer
   chart:
@@ -14,7 +14,7 @@ spec:
   values:
     image:
       repository: stefanprodan/steerer
-      tag: 0.0.1-rc.16
+      tag: 0.0.1-rc.18
       pullPolicy: IfNotPresent
     controlLoopInterval: "10s"
     metricsServer: "http://prometheus.istio-system.svc.cluster.local:9090"
