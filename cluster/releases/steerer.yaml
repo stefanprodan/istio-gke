@@ -1,0 +1,25 @@
+apiVersion: flux.weave.works/v1beta1
+kind: FluxHelmRelease
+metadata:
+  name: steerer
+  namespace: istio-system
+  annotations:
+    flux.weave.works/automated: "false"
+    flux.weave.works/tag.chart-image: semver:~0.0.1
+spec:
+  releaseName: steerer
+  chart:
+    repository: https://stefanprodan.github.io/steerer/
+    name: steerer
+    version: 0.0.1
+  values:
+    image:
+      repository: stefanprodan/steerer
+      tag: 0.0.1-rc.16
+      pullPolicy: IfNotPresent
+    controlLoopInterval: "10s"
+    metricsServer: "http://prometheus.istio-system.svc.cluster.local:9090"
+    crd:
+      create: true
+    rbac:
+      create: true
