@@ -14,10 +14,32 @@ gateways:
   istio-ingressgateway:
     replicaCount: 2
     autoscaleMin: 2
-    autoscaleMax: 3
+    autoscaleMax: 2
     # replace with your Istio Gateway IP
     loadBalancerIP: "35.193.191.33"
     type: LoadBalancer
+
+mixer:
+  enabled: true
+  replicaCount: 2
+  autoscaleMin: 2
+  autoscaleMax: 2
+
+  istio-policy:
+    autoscaleEnabled: true
+    autoscaleMin: 2
+    autoscaleMax: 2
+
+  istio-telemetry:
+    autoscaleEnabled: true
+    autoscaleMin: 2
+    autoscaleMax: 2
+
+pilot:
+  enabled: true
+  replicaCount: 1
+  autoscaleMin: 1
+  autoscaleMax: 1
 
 grafana:
   enabled: true
