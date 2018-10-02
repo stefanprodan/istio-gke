@@ -4,8 +4,7 @@ metadata:
   name: steerer
   namespace: istio-system
   annotations:
-    flux.weave.works/automated: "false"
-    flux.weave.works/tag.chart-image: semver:~0.0.1
+    flux.weave.works/automated: "true"
 spec:
   releaseName: steerer
   chart:
