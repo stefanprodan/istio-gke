@@ -1,0 +1,36 @@
+apiVersion: apps.weave.works/v1beta1
+kind: Rollout
+metadata:
+  name: podinfo
+  namespace: test
+spec:
+  targetKind: Deployment
+  virtualService:
+    name: podinfo
+  primary:
+    name: podinfo-primary
+    host: podinfo-primary
+  canary:
+    name: podinfo-canary
+    host: podinfo-canary
+  canaryAnalysis:
+    # max number of failed metric checks
+    # before rolling back the canary
+    threshold: 10
+    # max traffic percentage routed to canary
+    # percentage (0-100)
+    maxWeight: 50
+    # canary increment step
+    # percentage (0-100)
+    stepWeight: 10
+    metrics:
+    - name: istio_requests_total
+      # minimum req success rate (non 5xx responses)
+      # percentage (0-100)
+      threshold: 99
+      interval: 1m
+    - name: istio_request_duration_seconds_bucket
+      # maximum req duration P99
+      # milliseconds
+      threshold: 500
+      interval: 30s
