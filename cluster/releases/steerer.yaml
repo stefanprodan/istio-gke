@@ -6,6 +6,7 @@ metadata:
   namespace: istio-system
   annotations:
     flux.weave.works/automated: "true"
+    flux.weave.works/tag.chart-image: glob:0.0.1*
 spec:
   releaseName: steerer
   chart:
