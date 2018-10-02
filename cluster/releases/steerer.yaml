@@ -1,3 +1,4 @@
+---
 apiVersion: flux.weave.works/v1beta1
 kind: FluxHelmRelease
 metadata:
@@ -14,7 +15,7 @@ spec:
   values:
     image:
       repository: stefanprodan/steerer
-      tag: 0.0.1-rc.16
+      tag: 0.0.1-rc.18
       pullPolicy: IfNotPresent
     controlLoopInterval: "10s"
     metricsServer: "http://prometheus.istio-system.svc.cluster.local:9090"
