@@ -130,7 +130,9 @@ In a couple of seconds cert-manager should fetch a wildcard certificate from let
 
 ```bash
 kubectl -n istio-system logs deployment/certmanager -f
+
 Certificate issued successfully
+Certificate istio-system/istio-gateway scheduled for renewal in 1438 hours
 ```
 
 Recreate Istio ingress gateway pods:
