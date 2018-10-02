@@ -27,13 +27,13 @@ wait dig +short NS example.com
 Create a static IP address named `istio-gateway-ip` in the same region as your GKE cluster:
 
 ```bash
-gcloud compute addresses create istio-gateway-ip --region europe-west3-a
+gcloud compute addresses create istio-gateway-ip --region europe-west3
 ```
 
 Find the static IP address:
 
 ```bash
-gcloud compute addresses describe istio-gateway-ip --region europe-west3-a
+gcloud compute addresses describe istio-gateway-ip --region europe-west3
 ```
 
 Create the following DNS records (replace `example.com` with your domain and set your Istio Gateway IP):
