@@ -19,10 +19,10 @@ spec:
     threshold: 10
     # max traffic percentage routed to canary
     # percentage (0-100)
-    maxWeight: 50
+    maxWeight: 100
     # canary increment step
     # percentage (0-100)
-    stepWeight: 5
+    stepWeight: 1
     metrics:
     - name: istio_requests_total
       # minimum req success rate (non 5xx responses)

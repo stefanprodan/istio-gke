@@ -15,7 +15,7 @@ spec:
   values:
     canary:
       repository: quay.io/stefanprodan/podinfo
-      tag: 1.2.1
+      tag: 1.2.0
 
     gateway:
       enabled: true
