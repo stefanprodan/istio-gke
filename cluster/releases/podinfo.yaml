@@ -1,3 +1,4 @@
+---
 apiVersion: flux.weave.works/v1beta1
 kind: FluxHelmRelease
 metadata:
@@ -15,7 +16,7 @@ spec:
   values:
     image:
       repository: quay.io/stefanprodan/podinfo
-      tag: 1.2.0
+      tag: 1.2.1
 
     gateway:
       enabled: true
