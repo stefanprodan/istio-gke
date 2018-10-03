@@ -16,12 +16,12 @@ Look up your zone's name servers:
 gcloud dns managed-zones describe istio
 ```
 
-Update your registrar's name server records with the records returned by the above command. 
+Update your registrar's name server records with the records returned by the above command.
 
 Wait for the name servers to change (replace `example.com` with your domain):
 
 ```bash
-wait dig +short NS example.com
+watch dig +short NS example.com
 ```
 
 Create a static IP address named `istio-gateway-ip` in the same region as your GKE cluster:

@@ -29,7 +29,7 @@ kubectl apply -f ./of-virtual-service.yaml
 Wait for OpenFaaS Gateway to come online:
 
 ```bash
-watch curl -v https://openfaas.example.com/heathz 
+watch curl -v https://openfaas.example.com/healthz
 ```
 
 Save your credentials in faas-cli store:

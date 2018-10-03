@@ -10,19 +10,19 @@ password=$(head -c 12 /dev/urandom | shasum| cut -d' ' -f1)
 
 kubectl -n openfaas create secret generic basic-auth \
 --from-literal=basic-auth-user=admin \
---from-literal=basic-auth-password=$password 
+--from-literal=basic-auth-password=$password
 ```
 
 Add the OpenFaaS `helm` repository:
 
 ```bash
-$ helm repo add openfaas https://openfaas.github.io/faas-netes/
+helm repo add openfaas https://openfaas.github.io/faas-netes/
 ```
 
 Install OpenFaaS with Helm:
 
 ```bash
-helm upgrade --install openfaas ./chart/openfaas \
+helm upgrade --install openfaas openfaas/openfaas \
 --namespace openfaas \
 --set functionNamespace=openfaas-fn \
 --set operator.create=true \
