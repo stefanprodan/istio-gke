@@ -4,7 +4,7 @@ metadata:
   name: podinfo
   namespace: test
   annotations:
-    flux.weave.works/automated: "false"
+    flux.weave.works/automated: "true"
     flux.weave.works/tag.chart-image: semver:~1.2
 spec:
   releaseName: podinfo
