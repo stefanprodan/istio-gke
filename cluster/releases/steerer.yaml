@@ -16,7 +16,7 @@ spec:
   values:
     image:
       repository: stefanprodan/steerer
-      tag: 0.0.1-rc.18
+      tag: 0.0.1-rc.23
       pullPolicy: IfNotPresent
     controlLoopInterval: "1m"
     metricsServer: "http://prometheus.istio-system.svc.cluster.local:9090"
