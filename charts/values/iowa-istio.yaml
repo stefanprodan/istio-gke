@@ -40,6 +40,10 @@ pilot:
   replicaCount: 1
   autoscaleMin: 1
   autoscaleMax: 1
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1024Mi
 
 grafana:
   enabled: true
