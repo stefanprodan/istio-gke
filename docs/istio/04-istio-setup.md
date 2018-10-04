@@ -1,7 +1,7 @@
 # Install Istio with Helm
 
 Download the latest Istio release:
-                                         
+
 ```bash
 curl -L https://git.io/getLatestIstio | sh -
 ```
@@ -32,9 +32,9 @@ gcloud container clusters describe istio --zone=europe-west3-a \
 | grep -e clusterIpv4Cidr -e servicesIpv4Cidr
 ```
 
-You'll be using the IP ranges to allow unrestricted egress traffic for services running inside the service mesh. 
+You'll be using the IP ranges to allow unrestricted egress traffic for services running inside the service mesh.
 
-Configure Istio with Prometheus, Jaeger and cert-manager:
+Configure Istio with Prometheus, Jaeger, and cert-manager:
 
 ```yaml
 global:

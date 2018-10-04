@@ -6,7 +6,7 @@ Create a cluster with three nodes using the latest Kubernetes version:
 k8s_version=$(gcloud container get-server-config --format=json \
 | jq -r '.validNodeVersions[0]')
 
-gcloud container clusters create europe \
+gcloud container clusters create istio \
 --cluster-version=${k8s_version} \
 --zone=europe-west3-a \
 --num-nodes=3 \
@@ -24,7 +24,7 @@ Preemptible VMs are up to 80% cheaper than regular instances and are terminated 
 Set up credentials for `kubectl`:
 
 ```bash
-gcloud container clusters get-credentials europe -z=europe-west3-a
+gcloud container clusters get-credentials istio -z=europe-west3-a
 ```
 
 Create a cluster admin role binding:

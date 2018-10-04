@@ -51,7 +51,7 @@ spec:
 Save the above resources as env-canary.yaml and then apply it:
 
 ```bash
-kubectl apply -f ./env-canaray.yaml
+kubectl apply -f ./env-canary.yaml
 ```
 
 Create an Istio virtual service with 10% traffic going to canary:
@@ -85,8 +85,8 @@ kubectl apply -f ./env-virtual-service.yaml
 Test traffic routing (one in ten calls should hit the canary release):
 
 ```bash
- while true; do sleep 1; curl -sS https://openfaas.example.com/function/env | grep HOSTNAME; done 
- 
+ while true; do sleep 1; curl -sS https://openfaas.example.com/function/env | grep HOSTNAME; done
+
 HOSTNAME=env-59bf48fb9d-cjsjw
 HOSTNAME=env-59bf48fb9d-cjsjw
 HOSTNAME=env-59bf48fb9d-cjsjw
@@ -102,7 +102,7 @@ HOSTNAME=env-canary-5dffdf4458-4vnn2
 Access Jaeger dashboard using port forwarding:
 
 ```bash
-kubectl -n istio-system port-forward deployment/istio-tracing 16686:16686 
+kubectl -n istio-system port-forward deployment/istio-tracing 16686:16686
 ```
 
 Tracing the general available release:
