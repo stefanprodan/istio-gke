@@ -41,4 +41,4 @@ x-envoy-upstream-service-time: 3
 server: envoy
 ```
 
-Next: [A/B testing and canary deployments demo](/docs/apps/01-ab-testing-helm.md)
+Next: [A/B testing and canary deployments demo](/docs/apps/00-index.md)

@@ -323,3 +323,5 @@ Scaling down podinfo-canary.test
 Promotion completed! podinfo-canary.test revision 81289
 ```
 
+Next: [A/B Testing with Helm](02-ab-testing-helm.md)
+
