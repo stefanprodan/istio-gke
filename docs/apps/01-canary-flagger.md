@@ -1,28 +1,28 @@
-# Automated canary deployments with Steerer
+# Automated canary deployments with Flagger
 
-[Steerer](https://github.com/stefanprodan/steerer) is a Kubernetes operator that automates the promotion of
+[Flagger](https://github.com/stefanprodan/flagger) is a Kubernetes operator that automates the promotion of
 canary deployments using Istio routing for traffic shifting and Prometheus metrics for canary analysis.
 
-### Install Steerer
+### Install Flagger
 
-Deploy Steerer in the `istio-system` namespace using Helm:
+Deploy Flagger in the `istio-system` namespace using Helm:
 
 ```bash
-# add Steerer Helm repo
-helm repo add steerer https://stefanprodan.github.io/steerer
+# add Helm repo
+helm repo add steerer https://stefanprodan.github.io/flagger
 
-# install or upgrade Steerer
-helm upgrade --install steerer steerer/steerer \
+# install or upgrade
+helm upgrade --install steerer steerer/flagger \
 --namespace=istio-system \
 --set metricsServer=http://prometheus.istio-system:9090 \
 --set controlLoopInterval=1m
 ```
 
-Steerer requires two Kubernetes deployments: one for the version you want to upgrade called _primary_ and one for the _canary_.
+Flagger requires two Kubernetes deployments: one for the version you want to upgrade called _primary_ and one for the _canary_.
 Each deployment must have a corresponding ClusterIP service that exposes a port named http or https.
 These services are used as destinations in a Istio virtual service.
 
-![steerer-overview](https://raw.githubusercontent.com/stefanprodan/steerer/master/docs/diagrams/steerer-overview.png)
+![flagger-overview](https://raw.githubusercontent.com/stefanprodan/flagger/master/docs/diagrams/flagger-overview.png)
 
 Gated canary promotion stages:
 
@@ -60,7 +60,7 @@ You can change the canary analysis _max weight_ and the _step weight_ percentage
 Create a test namespace with Istio sidecar injection enabled:
 
 ```bash
-export REPO=https://raw.githubusercontent.com/stefanprodan/steerer/master
+export REPO=https://raw.githubusercontent.com/stefanprodan/flagger/master
 
 kubectl apply -f ${REPO}/artifacts/namespaces/test.yaml
 ```
@@ -121,7 +121,7 @@ kubectl apply -f ./podinfo-vs.yaml
 Create a canary custom resource:
 
 ```yaml
-apiVersion: steerer.app/v1beta1
+apiVersion: flagger.app/v1beta1
 kind: Canary
 metadata:
   name: podinfo
@@ -158,13 +158,13 @@ spec:
       threshold: 500
       interval: 30s
 ```
-Save the above resource as podinfo-rollout.yaml and then apply it:
+Save the above resource as podinfo-canary.yaml and then apply it:
 
 ```bash
-kubectl apply -f ./podinfo-rollout.yaml
+kubectl apply -f ./podinfo-canary.yaml
 ```
 
-![steerer-canary](https://raw.githubusercontent.com/stefanprodan/steerer/master/docs/diagrams/steerer-canary-hpa.png)
+![flagger-canary](https://raw.githubusercontent.com/stefanprodan/flagger/master/docs/diagrams/flagger-canary-hpa.png)
 
 Canary promotion output:
 
@@ -178,29 +178,29 @@ Status:
 Events:
   Type     Reason  Age   From     Message
   ----     ------  ----  ----     -------
-  Normal   Synced  3m    steerer  Starting canary deployment for podinfo.test
-  Normal   Synced  3m    steerer  Advance podinfo.test canary weight 5
-  Normal   Synced  3m    steerer  Advance podinfo.test canary weight 10
-  Normal   Synced  3m    steerer  Advance podinfo.test canary weight 15
-  Warning  Synced  3m    steerer  Halt podinfo.test advancement request duration 2.525s > 500ms
-  Warning  Synced  3m    steerer  Halt podinfo.test advancement request duration 1.567s > 500ms
-  Warning  Synced  3m    steerer  Halt podinfo.test advancement request duration 823ms > 500ms
-  Normal   Synced  2m    steerer  Advance podinfo.test canary weight 20
-  Normal   Synced  2m    steerer  Advance podinfo.test canary weight 25
-  Normal   Synced  1m    steerer  Advance podinfo.test canary weight 30
-  Warning  Synced  1m    steerer  Halt podinfo.test advancement success rate 82.33% < 99%
-  Warning  Synced  1m    steerer  Halt podinfo.test advancement success rate 87.22% < 99%
-  Warning  Synced  1m    steerer  Halt podinfo.test advancement success rate 94.74% < 99%
-  Normal   Synced  1m    steerer  Advance podinfo.test canary weight 35
-  Normal   Synced  55s   steerer  Advance podinfo.test canary weight 40
-  Normal   Synced  45s   steerer  Advance podinfo.test canary weight 45
-  Normal   Synced  35s   steerer  Advance podinfo.test canary weight 50
-  Normal   Synced  25s   steerer  Copying podinfo-canary.test template spec to podinfo.test
-  Warning  Synced  15s   steerer  Waiting for podinfo.test rollout to finish: 1 of 2 updated replicas are available
-  Normal   Synced  5s    steerer  Promotion completed! Scaling down podinfo-canary.test
+  Normal   Synced  3m    flagger  Starting canary deployment for podinfo.test
+  Normal   Synced  3m    flagger  Advance podinfo.test canary weight 5
+  Normal   Synced  3m    flagger  Advance podinfo.test canary weight 10
+  Normal   Synced  3m    flagger  Advance podinfo.test canary weight 15
+  Warning  Synced  3m    flagger  Halt podinfo.test advancement request duration 2.525s > 500ms
+  Warning  Synced  3m    flagger  Halt podinfo.test advancement request duration 1.567s > 500ms
+  Warning  Synced  3m    flagger  Halt podinfo.test advancement request duration 823ms > 500ms
+  Normal   Synced  2m    flagger  Advance podinfo.test canary weight 20
+  Normal   Synced  2m    flagger  Advance podinfo.test canary weight 25
+  Normal   Synced  1m    flagger  Advance podinfo.test canary weight 30
+  Warning  Synced  1m    flagger  Halt podinfo.test advancement success rate 82.33% < 99%
+  Warning  Synced  1m    flagger  Halt podinfo.test advancement success rate 87.22% < 99%
+  Warning  Synced  1m    flagger  Halt podinfo.test advancement success rate 94.74% < 99%
+  Normal   Synced  1m    flagger  Advance podinfo.test canary weight 35
+  Normal   Synced  55s   flagger  Advance podinfo.test canary weight 40
+  Normal   Synced  45s   flagger  Advance podinfo.test canary weight 45
+  Normal   Synced  35s   flagger  Advance podinfo.test canary weight 50
+  Normal   Synced  25s   flagger  Copying podinfo-canary.test template spec to podinfo.test
+  Warning  Synced  15s   flagger  Waiting for podinfo.test rollout to finish: 1 of 2 updated replicas are available
+  Normal   Synced  5s    flagger  Promotion completed! Scaling down podinfo-canary.test
 ```
 
-During the canary analysis you can generate HTTP 500 errors and high latency to test if Steerer pauses the rollout.
+During the canary analysis you can generate HTTP 500 errors and high latency to test if Flagger pauses the rollout.
 
 Create a tester pod and exec into it:
 
@@ -234,17 +234,17 @@ Status:
 Events:
   Type     Reason  Age   From     Message
   ----     ------  ----  ----     -------
-  Normal   Synced  3m    steerer  Starting canary deployment for podinfo.test
-  Normal   Synced  3m    steerer  Advance podinfo.test canary weight 5
-  Normal   Synced  3m    steerer  Advance podinfo.test canary weight 10
-  Normal   Synced  3m    steerer  Advance podinfo.test canary weight 15
-  Normal   Synced  3m    steerer  Halt podinfo.test advancement success rate 69.17% < 99%
-  Normal   Synced  2m    steerer  Halt podinfo.test advancement success rate 61.39% < 99%
-  Normal   Synced  2m    steerer  Halt podinfo.test advancement success rate 55.06% < 99%
-  Normal   Synced  2m    steerer  Halt podinfo.test advancement success rate 47.00% < 99%
-  Normal   Synced  2m    steerer  (combined from similar events): Halt podinfo.test advancement success rate 38.08% < 99%
-  Warning  Synced  1m    steerer  Rolling back podinfo-canary.test failed checks threshold reached 10
-  Warning  Synced  1m    steerer  Canary failed! Scaling down podinfo-canary.test
+  Normal   Synced  3m    flagger  Starting canary deployment for podinfo.test
+  Normal   Synced  3m    flagger  Advance podinfo.test canary weight 5
+  Normal   Synced  3m    flagger  Advance podinfo.test canary weight 10
+  Normal   Synced  3m    flagger  Advance podinfo.test canary weight 15
+  Normal   Synced  3m    flagger  Halt podinfo.test advancement success rate 69.17% < 99%
+  Normal   Synced  2m    flagger  Halt podinfo.test advancement success rate 61.39% < 99%
+  Normal   Synced  2m    flagger  Halt podinfo.test advancement success rate 55.06% < 99%
+  Normal   Synced  2m    flagger  Halt podinfo.test advancement success rate 47.00% < 99%
+  Normal   Synced  2m    flagger  (combined from similar events): Halt podinfo.test advancement success rate 38.08% < 99%
+  Warning  Synced  1m    flagger  Rolling back podinfo-canary.test failed checks threshold reached 10
+  Warning  Synced  1m    flagger  Canary failed! Scaling down podinfo-canary.test
 ```
 
 Trigger a new canary deployment by updating the canary image:
@@ -266,44 +266,44 @@ Status:
 Events:
   Type     Reason  Age   From     Message
   ----     ------  ----  ----     -------
-  Normal   Synced  3m    steerer  New revision detected podinfo-canary.test old 17211012 new 17246876
-  Normal   Synced  3m    steerer  Scaling up podinfo.test
-  Warning  Synced  3m    steerer  Waiting for podinfo.test rollout to finish: 0 of 1 updated replicas are available
-  Normal   Synced  3m    steerer  Advance podinfo.test canary weight 5
-  Normal   Synced  3m    steerer  Advance podinfo.test canary weight 10
-  Normal   Synced  3m    steerer  Advance podinfo.test canary weight 15
-  Normal   Synced  2m    steerer  Advance podinfo.test canary weight 20
-  Normal   Synced  2m    steerer  Advance podinfo.test canary weight 25
-  Normal   Synced  1m    steerer  Advance podinfo.test canary weight 30
-  Normal   Synced  1m    steerer  Advance podinfo.test canary weight 35
-  Normal   Synced  55s   steerer  Advance podinfo.test canary weight 40
-  Normal   Synced  45s   steerer  Advance podinfo.test canary weight 45
-  Normal   Synced  35s   steerer  Advance podinfo.test canary weight 50
-  Normal   Synced  25s   steerer  Copying podinfo-canary.test template spec to podinfo.test
-  Warning  Synced  15s   steerer  Waiting for podinfo.test rollout to finish: 1 of 2 updated replicas are available
-  Normal   Synced  5s    steerer  Promotion completed! Scaling down podinfo-canary.test
+  Normal   Synced  3m    flagger  New revision detected podinfo-canary.test old 17211012 new 17246876
+  Normal   Synced  3m    flagger  Scaling up podinfo.test
+  Warning  Synced  3m    flagger  Waiting for podinfo.test rollout to finish: 0 of 1 updated replicas are available
+  Normal   Synced  3m    flagger  Advance podinfo.test canary weight 5
+  Normal   Synced  3m    flagger  Advance podinfo.test canary weight 10
+  Normal   Synced  3m    flagger  Advance podinfo.test canary weight 15
+  Normal   Synced  2m    flagger  Advance podinfo.test canary weight 20
+  Normal   Synced  2m    flagger  Advance podinfo.test canary weight 25
+  Normal   Synced  1m    flagger  Advance podinfo.test canary weight 30
+  Normal   Synced  1m    flagger  Advance podinfo.test canary weight 35
+  Normal   Synced  55s   flagger  Advance podinfo.test canary weight 40
+  Normal   Synced  45s   flagger  Advance podinfo.test canary weight 45
+  Normal   Synced  35s   flagger  Advance podinfo.test canary weight 50
+  Normal   Synced  25s   flagger  Copying podinfo-canary.test template spec to podinfo.test
+  Warning  Synced  15s   flagger  Waiting for podinfo.test rollout to finish: 1 of 2 updated replicas are available
+  Normal   Synced  5s    flagger  Promotion completed! Scaling down podinfo-canary.test
 ```
 
 ### Monitoring
 
-Steerer comes with a Grafana dashboard made for canary analysis.
+Flagger comes with a Grafana dashboard made for canary analysis.
 
 Install Grafana with Helm:
 
 ```bash
-helm upgrade -i steerer-grafana steerer/grafana \
+helm upgrade -i flagger-grafana flagger/grafana \
 --namespace=istio-system \
 --set url=http://prometheus.istio-system:9090
 ```
 
 The dashboard shows the RED and USE metrics for the primary and canary workloads:
 
-![steerer-grafana](https://raw.githubusercontent.com/stefanprodan/steerer/master/docs/screens/grafana-canary-analysis.png)
+![flagger-grafana](https://raw.githubusercontent.com/stefanprodan/flagger/master/docs/screens/grafana-canary-analysis.png)
 
-The canary errors and latency spikes have been recorded as Kubernetes events and logged by Steerer in json format:
+The canary errors and latency spikes have been recorded as Kubernetes events and logged by Flagger in json format:
 
 ```
-kubectl -n istio-system logs deployment/steerer --tail=100 | jq .msg
+kubectl -n istio-system logs deployment/flagger --tail=100 | jq .msg
 
 Starting canary deployment for podinfo.test
 Advance podinfo.test canary weight 5
@@ -322,3 +322,4 @@ Copying podinfo-canary.test template spec to podinfo-primary.test
 Scaling down podinfo-canary.test
 Promotion completed! podinfo-canary.test revision 81289
 ```
+

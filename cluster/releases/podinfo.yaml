@@ -10,8 +10,8 @@ metadata:
 spec:
   releaseName: podinfo
   chart:
-    repository: https://stefanprodan.github.io/steerer/
-    name: podinfo-steerer
+    repository: https://stefanprodan.github.io/flagger/
+    name: podinfo-flagger
     version: 2.0.0
   values:
     image:
