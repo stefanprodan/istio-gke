@@ -71,7 +71,7 @@ kubectl apply -f ${REPO}/artifacts/canaries/hpa.yaml
 ```
 
 
-Create a canary custom resource:
+Create a canary custom resource (replace example.com with your own domain):
 
 ```yaml
 apiVersion: flagger.app/v1alpha1
@@ -98,7 +98,7 @@ spec:
     - public-gateway.istio-system.svc.cluster.local
     # Istio virtual service host names (optional)
     hosts:
-    - app.istio.weavedx.com
+    - app.example.com
   canaryAnalysis:
     # max number of failed metric checks before rollback
     threshold: 5
