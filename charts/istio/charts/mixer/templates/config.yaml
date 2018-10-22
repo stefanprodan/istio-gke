@@ -185,14 +185,12 @@ spec:
       valueType: STRING
 ---
 apiVersion: "config.istio.io/v1alpha2"
-kind: handler
+kind: stdio
 metadata:
-  name: stdio
+  name: handler
   namespace: {{ .Release.Namespace }}
 spec:
-  compiledAdapter: stdio
-  params:
-    outputAsJson: true
+  outputAsJson: true
 ---
 apiVersion: "config.istio.io/v1alpha2"
 kind: logentry
@@ -287,7 +285,7 @@ metadata:
 spec:
   match: context.protocol == "http" || context.protocol == "grpc"
   actions:
-  - handler: stdio
+  - handler: handler.stdio
     instances:
     - accesslog.logentry
 ---
@@ -299,7 +297,7 @@ metadata:
 spec:
   match: context.protocol == "tcp"
   actions:
-  - handler: stdio
+  - handler: handler.stdio
     instances:
     - tcpaccesslog.logentry
 ---
@@ -462,149 +460,147 @@ spec:
   monitored_resource_type: '"UNSPECIFIED"'
 ---
 apiVersion: "config.istio.io/v1alpha2"
-kind: handler
+kind: prometheus
 metadata:
-  name: prometheus
+  name: handler
   namespace: {{ .Release.Namespace }}
 spec:
-  compiledAdapter: prometheus
-  params:
-    metrics:
-    - name: requests_total
-      instance_name: requestcount.metric.{{ .Release.Namespace }}
-      kind: COUNTER
-      label_names:
-      - reporter
-      - source_app
-      - source_principal
-      - source_workload
-      - source_workload_namespace
-      - source_version
-      - destination_app
-      - destination_principal
-      - destination_workload
-      - destination_workload_namespace
-      - destination_version
-      - destination_service
-      - destination_service_name
-      - destination_service_namespace
-      - request_protocol
-      - response_code
-      - connection_security_policy
-    - name: request_duration_seconds
-      instance_name: requestduration.metric.{{ .Release.Namespace }}
-      kind: DISTRIBUTION
-      label_names:
-      - reporter
-      - source_app
-      - source_principal
-      - source_workload
-      - source_workload_namespace
-      - source_version
-      - destination_app
-      - destination_principal
-      - destination_workload
-      - destination_workload_namespace
-      - destination_version
-      - destination_service
-      - destination_service_name
-      - destination_service_namespace
-      - request_protocol
-      - response_code
-      - connection_security_policy
-      buckets:
-        explicit_buckets:
-          bounds: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
-    - name: request_bytes
-      instance_name: requestsize.metric.{{ .Release.Namespace }}
-      kind: DISTRIBUTION
-      label_names:
-      - reporter
-      - source_app
-      - source_principal
-      - source_workload
-      - source_workload_namespace
-      - source_version
-      - destination_app
-      - destination_principal
-      - destination_workload
-      - destination_workload_namespace
-      - destination_version
-      - destination_service
-      - destination_service_name
-      - destination_service_namespace
-      - request_protocol
-      - response_code
-      - connection_security_policy
-      buckets:
-        exponentialBuckets:
-          numFiniteBuckets: 8
-          scale: 1
-          growthFactor: 10
-    - name: response_bytes
-      instance_name: responsesize.metric.{{ .Release.Namespace }}
-      kind: DISTRIBUTION
-      label_names:
-      - reporter
-      - source_app
-      - source_principal
-      - source_workload
-      - source_workload_namespace
-      - source_version
-      - destination_app
-      - destination_principal
-      - destination_workload
-      - destination_workload_namespace
-      - destination_version
-      - destination_service
-      - destination_service_name
-      - destination_service_namespace
-      - request_protocol
-      - response_code
-      - connection_security_policy
-      buckets:
-        exponentialBuckets:
-          numFiniteBuckets: 8
-          scale: 1
-          growthFactor: 10
-    - name: tcp_sent_bytes_total
-      instance_name: tcpbytesent.metric.{{ .Release.Namespace }}
-      kind: COUNTER
-      label_names:
-      - reporter
-      - source_app
-      - source_principal
-      - source_workload
-      - source_workload_namespace
-      - source_version
-      - destination_app
-      - destination_principal
-      - destination_workload
-      - destination_workload_namespace
-      - destination_version
-      - destination_service
-      - destination_service_name
-      - destination_service_namespace
-      - connection_security_policy
-    - name: tcp_received_bytes_total
-      instance_name: tcpbytereceived.metric.{{ .Release.Namespace }}
-      kind: COUNTER
-      label_names:
-      - reporter
-      - source_app
-      - source_principal
-      - source_workload
-      - source_workload_namespace
-      - source_version
-      - destination_app
-      - destination_principal
-      - destination_workload
-      - destination_workload_namespace
-      - destination_version
-      - destination_service
-      - destination_service_name
-      - destination_service_namespace
-      - connection_security_policy
+  metrics:
+  - name: requests_total
+    instance_name: requestcount.metric.{{ .Release.Namespace }}
+    kind: COUNTER
+    label_names:
+    - reporter
+    - source_app
+    - source_principal
+    - source_workload
+    - source_workload_namespace
+    - source_version
+    - destination_app
+    - destination_principal
+    - destination_workload
+    - destination_workload_namespace
+    - destination_version
+    - destination_service
+    - destination_service_name
+    - destination_service_namespace
+    - request_protocol
+    - response_code
+    - connection_security_policy
+  - name: request_duration_seconds
+    instance_name: requestduration.metric.{{ .Release.Namespace }}
+    kind: DISTRIBUTION
+    label_names:
+    - reporter
+    - source_app
+    - source_principal
+    - source_workload
+    - source_workload_namespace
+    - source_version
+    - destination_app
+    - destination_principal
+    - destination_workload
+    - destination_workload_namespace
+    - destination_version
+    - destination_service
+    - destination_service_name
+    - destination_service_namespace
+    - request_protocol
+    - response_code
+    - connection_security_policy
+    buckets:
+      explicit_buckets:
+        bounds: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+  - name: request_bytes
+    instance_name: requestsize.metric.{{ .Release.Namespace }}
+    kind: DISTRIBUTION
+    label_names:
+    - reporter
+    - source_app
+    - source_principal
+    - source_workload
+    - source_workload_namespace
+    - source_version
+    - destination_app
+    - destination_principal
+    - destination_workload
+    - destination_workload_namespace
+    - destination_version
+    - destination_service
+    - destination_service_name
+    - destination_service_namespace
+    - request_protocol
+    - response_code
+    - connection_security_policy
+    buckets:
+      exponentialBuckets:
+        numFiniteBuckets: 8
+        scale: 1
+        growthFactor: 10
+  - name: response_bytes
+    instance_name: responsesize.metric.{{ .Release.Namespace }}
+    kind: DISTRIBUTION
+    label_names:
+    - reporter
+    - source_app
+    - source_principal
+    - source_workload
+    - source_workload_namespace
+    - source_version
+    - destination_app
+    - destination_principal
+    - destination_workload
+    - destination_workload_namespace
+    - destination_version
+    - destination_service
+    - destination_service_name
+    - destination_service_namespace
+    - request_protocol
+    - response_code
+    - connection_security_policy
+    buckets:
+      exponentialBuckets:
+        numFiniteBuckets: 8
+        scale: 1
+        growthFactor: 10
+  - name: tcp_sent_bytes_total
+    instance_name: tcpbytesent.metric.{{ .Release.Namespace }}
+    kind: COUNTER
+    label_names:
+    - reporter
+    - source_app
+    - source_principal
+    - source_workload
+    - source_workload_namespace
+    - source_version
+    - destination_app
+    - destination_principal
+    - destination_workload
+    - destination_workload_namespace
+    - destination_version
+    - destination_service
+    - destination_service_name
+    - destination_service_namespace
+    - connection_security_policy
+  - name: tcp_received_bytes_total
+    instance_name: tcpbytereceived.metric.{{ .Release.Namespace }}
+    kind: COUNTER
+    label_names:
+    - reporter
+    - source_app
+    - source_principal
+    - source_workload
+    - source_workload_namespace
+    - source_version
+    - destination_app
+    - destination_principal
+    - destination_workload
+    - destination_workload_namespace
+    - destination_version
+    - destination_service
+    - destination_service_name
+    - destination_service_namespace
+    - connection_security_policy
 ---
 apiVersion: "config.istio.io/v1alpha2"
 kind: rule
@@ -614,7 +610,7 @@ metadata:
 spec:
   match: context.protocol == "http" || context.protocol == "grpc"
   actions:
-  - handler: prometheus
+  - handler: handler.prometheus
     instances:
     - requestcount.metric
     - requestduration.metric
@@ -629,26 +625,24 @@ metadata:
 spec:
   match: context.protocol == "tcp"
   actions:
-  - handler: prometheus
+  - handler: handler.prometheus
     instances:
     - tcpbytesent.metric
     - tcpbytereceived.metric
 ---
 
 apiVersion: "config.istio.io/v1alpha2"
-kind: handler
+kind: kubernetesenv
 metadata:
-  name: kubernetesenv
+  name: handler
   namespace: {{ .Release.Namespace }}
 spec:
-  compiledAdapter: kubernetesenv
-  params:
-    # when running from mixer root, use the following config after adding a
-    # symbolic link to a kubernetes config file via:
-    #
-    # $ ln -s ~/.kube/config mixer/adapter/kubernetes/kubeconfig
-    #
-    # kubeconfig_path: "mixer/adapter/kubernetes/kubeconfig"
+  # when running from mixer root, use the following config after adding a
+  # symbolic link to a kubernetes config file via:
+  #
+  # $ ln -s ~/.kube/config mixer/adapter/kubernetes/kubeconfig
+  #
+  # kubeconfig_path: "mixer/adapter/kubernetes/kubeconfig"
 
 ---
 apiVersion: "config.istio.io/v1alpha2"
@@ -658,7 +652,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   actions:
-  - handler: kubernetesenv
+  - handler: handler.kubernetesenv
     instances:
     - attributes.kubernetes
 ---
@@ -670,7 +664,7 @@ metadata:
 spec:
   match: context.protocol == "tcp"
   actions:
-  - handler: kubernetesenv
+  - handler: handler.kubernetesenv
     instances:
     - attributes.kubernetes
 ---
