@@ -2,22 +2,17 @@
 apiVersion: flux.weave.works/v1beta1
 kind: FluxHelmRelease
 metadata:
-  name: flagger
+  name: flagger-grafana
   namespace: istio-system
   annotations:
     flux.weave.works/ignore: "true"
     flux.weave.works/automated: "false"
     flux.weave.works/tag.chart-image: semver:~0.1
 spec:
-  releaseName: flagger
+  releaseName: flagger-grafana
   chart:
     repository: https://flagger.io
-    name: flagger
+    name: grafana
     version: 0.1.0
   values:
-    controlLoopInterval: "15s"
-    metricsServer: "http://prometheus.istio-system.svc.cluster.local:9090"
-    crd:
-      create: true
-    rbac:
-      create: true
+    url: "http://prometheus.istio-system.svc.cluster.local:9090"

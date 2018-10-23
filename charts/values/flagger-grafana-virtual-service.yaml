@@ -2,16 +2,16 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: steerer-grafana
+  name: flagger-grafana
   namespace: istio-system
 spec:
   hosts:
-  - "steerer.iowa.weavedx.com"
+  - "flagger.iowa.weavedx.com"
   gateways:
   - public-gateway.istio-system.svc.cluster.local
   http:
   - route:
     - destination:
-        host: steerer-grafana
+        host: flagger-grafana
     timeout: 30s
 
