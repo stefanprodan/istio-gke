@@ -6,7 +6,7 @@ global:
   hub: docker.io/istio
 
   # Default tag for Istio images.
-  tag: 1.1.0.snapshot.1
+  tag: 1.0.3
 
   # Gateway used for legacy k8s Ingress resources. By default it is
   # using 'istio:ingress', to match 0.8 config. It requires that
@@ -41,13 +41,17 @@ global:
     # disable access log for sidecar.
     accessLogFile: "/dev/stdout"
 
+    #If set to true, istio-proxy container will have privileged securityContext
+    privileged: false
+
     # If set, newly injected sidecars will have core dumps enabled. Core dumps will always be written to the same
     # file to prevent storage filling up indefinitely. Add a timestamp option to core_pattern to keep all cores:
     # e.g. sysctl -w kernel.core_pattern=/var/lib/istio/core.%e.%p.%t
     enableCoreDump: false
 
     # Default port for Pilot agent health checks. A value of 0 will disable health checking.
-    statusPort: 15020
+    # statusPort: 15020
+    statusPort: 0
 
     # The initial delay for readiness probes in seconds.
     readinessInitialDelaySeconds: 1
@@ -109,6 +113,10 @@ global:
   # Will set the value with same name in istio config map - pilot needs to be restarted to take effect.
   disablePolicyChecks: false
 
+  # policyCheckFailOpen allows traffic in cases when the mixer policy service cannot be reached.
+  # Default is false which means the traffic is denied when the client is unable to connect to Mixer.
+  policyCheckFailOpen: false
+
   # EnableTracing sets the value with same name in istio config map, requires pilot restart to take effect.
   enableTracing: true
 
@@ -120,9 +128,7 @@ global:
 
   # ImagePullSecrets for all ServiceAccount, list of secrets in the same namespace
   # to use for pulling any images in pods that reference this ServiceAccount.
-  # For components that don't use ServiceAccounts (i.e. grafana, servicegraph, tracing)
-  # ImagePullSecrets will be added to the corresponding Deployment(StatefulSet) objects.
-  # Must be set for any clustser configured with private docker registry.
+  # Must be set for any clustser configured with privte docker registry.
   imagePullSecrets:
     # - private-registry-key
 
@@ -170,7 +176,7 @@ global:
 
   # Kubernetes >=v1.11.0 will create two PriorityClass, including system-cluster-critical and
   # system-node-critical, it is better to configure this in order to make sure your Istio pods
-  # will not be killed because of low priority class.
+  # will not be killed because of low prioroty class.
   # Refer to https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
   # for more detail.
   priorityClassName: ""
@@ -181,10 +187,6 @@ global:
   # 'kubectl apply -f install/kubernetes/helm/istio/templates/crds.yaml
   # and this options must be set off.
   crds: true
-
-  # Use the Mesh Control Protocol (MCP) for configuring Mixer and
-  # Pilot. Requires galley (`--set galley.enabled=true`).
-  useMCP: false
 
 #
 # ingress configuration
@@ -198,6 +200,8 @@ ingress:
     annotations: {}
     loadBalancerIP: ""
     type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    # Uncomment the following line to preserve client source ip.
+    # externalTrafficPolicy: Local
     ports:
     - port: 80
       name: http
@@ -235,10 +239,10 @@ gateways:
     cpu:
       targetAverageUtilization: 80
     loadBalancerIP: ""
-    loadBalancerSourceRanges: {}
     serviceAnnotations: {}
-    podAnnotations: {}
     type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    # Uncomment the following line to preserve client source ip.
+    # externalTrafficPolicy: Local
 
     ports:
       ## You can add custom gateway ports
@@ -288,20 +292,19 @@ gateways:
     cpu:
       targetAverageUtilization: 80
     serviceAnnotations: {}
-    podAnnotations: {}
     type: ClusterIP #change to NodePort or LoadBalancer if need be
     ports:
-    - port: 80
-      name: http2
-    - port: 443
-      name: https
+      - port: 80
+        name: http2
+      - port: 443
+        name: https
     secretVolumes:
-    - name: egressgateway-certs
-      secretName: istio-egressgateway-certs
-      mountPath: /etc/istio/egressgateway-certs
-    - name: egressgateway-ca-certs
-      secretName: istio-egressgateway-ca-certs
-      mountPath: /etc/istio/egressgateway-ca-certs
+      - name: egressgateway-certs
+        secretName: istio-egressgateway-certs
+        mountPath: /etc/istio/egressgateway-certs
+      - name: egressgateway-ca-certs
+        secretName: istio-egressgateway-ca-certs
+        mountPath: /etc/istio/egressgateway-ca-certs
 
   # Mesh ILB gateway creates a gateway of type InternalLoadBalancer,
   # for mesh expansion. It exposes the mtls ports for Pilot,CA as well
@@ -321,10 +324,11 @@ gateways:
       #limits:
       #  cpu: 1800m
       #  memory: 256Mi
+    cpu:
+      targetAverageUtilization: 80      
     loadBalancerIP: ""
     serviceAnnotations:
       cloud.google.com/load-balancer-type: "internal"
-    podAnnotations: {}
     type: LoadBalancer
     ports:
     ## You can add custom gateway ports - google ILB default quota is 5 ports,
@@ -336,8 +340,8 @@ gateways:
     - port: 8060
       targetPort: 8060
       name: tcp-citadel-grpc-tls
-    # Port 5353 is forwarded to kube-dns
-    - port: 5353
+    # Port 853 is reserved for the kube-dns gateway
+    - port: 853
       name: tcp-dns
     secretVolumes:
     - name: ilbgateway-certs
@@ -374,6 +378,9 @@ mixer:
   autoscaleMax: 5
   image: mixer
 
+  env:
+    GODEBUG: gctrace=2
+
   istio-policy:
     autoscaleEnabled: true
     autoscaleMin: 1
@@ -388,7 +395,9 @@ mixer:
     cpu:
       targetAverageUtilization: 80
 
-  podAnnotations: {}
+  prometheusStatsdExporter:
+    hub: docker.io/prom
+    tag: v0.6.0
 
 #
 # pilot configuration
@@ -400,7 +409,7 @@ pilot:
   autoscaleMax: 5
   image: pilot
   sidecar: true
-  traceSampling: 100.0
+  traceSampling: 1.0
   # Resources for a small pilot install
   resources:
     requests:
@@ -416,21 +425,9 @@ pilot:
 # security configuration
 #
 security:
-  enabled: true
   replicaCount: 1
   image: citadel
   selfSigned: true # indicate if self-signed CA is used.
-  identityDomain: cluster.local # indicate the domain used in SPIFFE identity URL
-
-#
-# nodeagent configuration
-#
-nodeagent:
-  enabled: false
-  image: node-agent-k8s
-  sdsudspath: ""
-  env:
-    CA_ADDR: ""
 
 #
 # addons configuration
@@ -450,16 +447,14 @@ grafana:
   storageClassName: ""
   security:
     enabled: false
-    secretName: grafana
-    usernameKey: username
-    passphraseKey: passphrase
+    adminUser: admin
+    adminPassword: admin
   service:
     annotations: {}
     name: http
     type: ClusterIP
     externalPort: 3000
-    loadBalancerIP:
-    loadBalancerSourceRanges:
+    internalPort: 3000
 
 prometheus:
   enabled: true
@@ -482,8 +477,7 @@ servicegraph:
     name: http
     type: ClusterIP
     externalPort: 8088
-    loadBalancerIP:
-    loadBalancerSourceRanges:
+    internalPort: 8088
   ingress:
     enabled: false
     # Used to create an Ingress record.
@@ -497,7 +491,7 @@ servicegraph:
       # - secretName: servicegraph-tls
       #   hosts:
       #     - servicegraph.local
-  # prometheus address
+  # prometheus addres
   prometheusAddr: http://prometheus:9090
 
 tracing:
@@ -505,9 +499,11 @@ tracing:
   provider: jaeger
   jaeger:
     hub: docker.io/jaegertracing
-    tag: 1.6
+    tag: 1.5
     memory:
       max_traces: 50000
+    ui:
+      port: 16686
     ingress:
       enabled: false
       # Used to create an Ingress record.
@@ -527,6 +523,7 @@ tracing:
     name: http
     type: ClusterIP
     externalPort: 9411
+    internalPort: 9411
   ingress:
     enabled: false
     # Used to create an Ingress record.
@@ -545,7 +542,7 @@ kiali:
   enabled: false
   replicaCount: 1
   hub: docker.io/kiali
-  tag: v0.6
+  tag: v0.9
   ingress:
     enabled: false
     ## Used to create an Ingress record.
@@ -560,14 +557,15 @@ kiali:
       #   hosts:
       #     - kiali.local
   dashboard:
-    secretName: kiali
-    usernameKey: username
-    passphraseKey: passphrase
+    username: admin
+    # Default admin passphrase for kiali. Must be set during setup, and
+    # changed by overriding the secret
+    passphrase: admin
 
-    # Override the automatically detected Grafana URL, useful when Grafana service has no ExternalIPs
+    # Override the automatically detected Grafana URL, usefull when Grafana service has no ExternalIPs
     # grafanaURL:
 
-    # Override the automatically detected Jaeger URL, useful when Jaeger service has no ExternalIPs
+    # Override the automatically detected Jaeger URL, usefull when Jaeger service has no ExternalIPs
     # jaegerURL:
 
 # Certmanager uses ACME to sign certificates. Since Istio gateways are

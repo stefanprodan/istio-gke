@@ -58,6 +58,8 @@ gateways:
     loadBalancerIP: ""
     serviceAnnotations: {}
     type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    # Uncomment the following line to preserve client source ip.
+    # externalTrafficPolicy: Local
 
     ports:
       ## You can add custom gateway ports

@@ -1,9 +1,11 @@
 # Istio defaults for Iowa GKE cluster (region us-central1 zone us-central1-a)
 global:
   nodePort: false
+  crds: false
   proxy:
     # replace with your GKE IP ranges
     includeIPRanges: "10.4.0.0/14,10.0.0.0/20"
+
 
 sidecarInjectorWebhook:
   enabled: true
@@ -62,6 +64,8 @@ servicegraph:
 
 tracing:
   enabled: true
+  jaeger:
+    tag: 1.7
 
 certmanager:
   enabled: true

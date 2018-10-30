@@ -5,7 +5,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app: kiali
-    {{- template "common_labels" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -16,7 +18,6 @@ spec:
       name: kiali
       labels:
         app: kiali
-        {{- template "common_template_labels" . }}
       annotations:
         sidecar.istio.io/inject: "false"
         scheduler.alpha.kubernetes.io/critical-pod: ""
@@ -42,29 +43,15 @@ spec:
         - name: SERVER_CREDENTIALS_USERNAME
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.dashboard.secretName }}
-              key: {{ .Values.dashboard.usernameKey }}
+              name: kiali
+              key: username
         - name: SERVER_CREDENTIALS_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.dashboard.secretName }}
-              key: {{ .Values.dashboard.passphraseKey }}
+              name: kiali
+              key: passphrase
         - name: PROMETHEUS_SERVICE_URL
           value: http://prometheus:9090
-{{- if .Values.dashboard.grafanaURL }}
-        - name: GRAFANA_URL
-          value: {{ .Values.dashboard.grafanaURL }}
-{{- end }}
-        - name: GRAFANA_DASHBOARD
-          value: istio-service-dashboard
-        - name: GRAFANA_VAR_SERVICE_SOURCE
-          value: var-service
-        - name: GRAFANA_VAR_SERVICE_DEST
-          value: var-service
-{{- if .Values.dashboard.jaegerURL }}
-        - name: JAEGER_URL
-          value: {{ .Values.dashboard.jaegerURL }}
-{{- end }}
         volumeMounts:
         - name: kiali-configuration
           mountPath: "/kiali-configuration"

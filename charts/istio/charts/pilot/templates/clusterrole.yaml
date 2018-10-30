@@ -24,7 +24,7 @@ rules:
   resources: ["customresourcedefinitions"]
   verbs: ["*"]
 - apiGroups: ["extensions"]
-  resources: ["ingresses", "ingresses/status"]
+  resources: ["thirdpartyresources", "thirdpartyresources.extensions", "ingresses", "ingresses/status"]
   verbs: ["*"]
 - apiGroups: [""]
   resources: ["configmaps"]

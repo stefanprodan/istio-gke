@@ -5,14 +5,15 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app: {{ template "servicegraph.name" . }}
-    {{- template "common_labels" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   replicas: {{ .Values.replicaCount }}
   template:
     metadata:
       labels:
         app: servicegraph
-        {{- template "common_template_labels" . }}
       annotations:
         sidecar.istio.io/inject: "false"
         scheduler.alpha.kubernetes.io/critical-pod: ""
@@ -20,28 +21,22 @@ spec:
 {{- if .Values.global.priorityClassName }}
       priorityClassName: "{{ .Values.global.priorityClassName }}"
 {{- end }}
-{{- if .Values.global.imagePullSecrets }}
-      imagePullSecrets:
-{{- range .Values.global.imagePullSecrets }}
-        - name: {{ . }}
-{{- end }}
-{{- end }}
       containers:
         - name: servicegraph
           image: "{{ .Values.global.hub }}/{{ .Values.image }}:{{ .Values.global.tag }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
-            - containerPort: 8088
+            - containerPort: {{ .Values.service.internalPort }}
           args:
-          - --prometheusAddr={{- .Values.prometheusAddr }}
+          - --prometheusAddr=http://prometheus:9090
           livenessProbe:
             httpGet:
               path: /graph
-              port: 8088
+              port: {{ .Values.service.internalPort }}
           readinessProbe:
             httpGet:
               path: /graph
-              port: 8088
+              port: {{ .Values.service.internalPort }}
           resources:
 {{- if .Values.resources }}
 {{ toYaml .Values.resources | indent 12 }}

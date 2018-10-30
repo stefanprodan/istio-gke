@@ -7,10 +7,12 @@ metadata:
   name: {{ $key }}
   namespace: {{ $spec.namespace | default $.Release.Namespace }}
   labels:
+    chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
     {{- range $key, $val := $spec.labels }}
     {{ $key }}: {{ $val }}
     {{- end }}
-    {{- template "common_labels" $ }}
 spec:
   replicas: {{ $spec.replicaCount }}
   template:
@@ -19,13 +21,9 @@ spec:
         {{- range $key, $val := $spec.labels }}
         {{ $key }}: {{ $val }}
         {{- end }}
-        {{- template "common_template_labels" $ }}
       annotations:
         sidecar.istio.io/inject: "false"
         scheduler.alpha.kubernetes.io/critical-pod: ""
-{{- if $spec.podAnnotations }}
-{{ toYaml $spec.podAnnotations | indent 8 }}
-{{ end }}
     spec:
       serviceAccountName: {{ $key }}-service-account
 {{- if $.Values.global.priorityClassName }}
@@ -50,7 +48,11 @@ spec:
 {{- end }}
       containers:
         - name: istio-proxy
+{{- if contains "/" $.Values.global.proxy.image }}
+          image: "{{ $.Values.global.proxy.image }}"
+{{- else }}
           image: "{{ $.Values.global.hub }}/{{ $.Values.global.proxy.image }}:{{ $.Values.global.tag }}"
+{{- end }}
           imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
           ports:
             {{- range $key, $val := $spec.ports }}
@@ -64,8 +66,8 @@ spec:
           args:
           - proxy
           - router
-          - --log_output_level
-          - 'info'
+          - -v
+          - "2"
           - --discoveryRefreshDelay
           - '1s' #discoveryRefreshDelay
           - --drainDuration
@@ -93,18 +95,18 @@ spec:
           - MUTUAL_TLS
           - --discoveryAddress
           {{- if $.Values.global.istioNamespace }}
-          - istio-pilot.{{ $.Values.global.istioNamespace }}:15011
+          - istio-pilot.{{ $.Values.global.istioNamespace }}:15005
           {{- else }}
-          - istio-pilot:15011
+          - istio-pilot:15005
           {{- end }}
         {{- else }}
           - --controlPlaneAuthPolicy
           - NONE
           - --discoveryAddress
           {{- if $.Values.global.istioNamespace }}
-          - istio-pilot.{{ $.Values.global.istioNamespace }}:15010
+          - istio-pilot.{{ $.Values.global.istioNamespace }}:8080
           {{- else }}
-          - istio-pilot:15010
+          - istio-pilot:8080
           {{- end }}
         {{- end }}
           resources:
