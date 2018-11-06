@@ -48,7 +48,7 @@ exposeHost: true
 
 blue:
   replicas: 2
-  tag: "1.1.1"
+  tag: "1.2.0"
   message: "Greetings from the blue frontend"
   backend: http://backend:9898/api/echo
 
@@ -72,7 +72,7 @@ host: backend
 
 blue:
   replicas: 2
-  tag: "1.1.1"
+  tag: "1.2.0"
   backend: http://store:9898/api/echo
 
 green:
@@ -95,7 +95,7 @@ host: store
 
 blue:
   replicas: 2
-  tag: "1.1.1"
+  tag: "1.2.0"
   weight: 100
 
 green:
@@ -161,13 +161,13 @@ exposeHost: true
 
 blue:
   replicas: 2
-  tag: "1.1.1"
+  tag: "1.2.0"
   message: "Greetings from the blue frontend"
   backend: http://backend:9898/api/echo
 
 green:
   replicas: 2
-  tag: "1.2.0"
+  tag: "1.2.1"
   routing:
     # target Safari
     - match:
@@ -178,7 +178,7 @@ green:
     - match:
       - headers:
           x-api-version:
-            regex: "^(v{0,1})1\\.2\\.([0-9]).*"
+            regex: "^(v{0,1})1\\.2\\.([1-9]).*"
   message: "Greetings from the green frontend"
   backend: http://backend:9898/api/echo
 ```
@@ -199,12 +199,12 @@ host: backend
 
 blue:
   replicas: 2
-  tag: "1.1.1"
+  tag: "1.2.0"
   backend: http://store:9898/api/echo
 
 green:
   replicas: 2
-  tag: "1.2.0"
+  tag: "1.2.1"
   routing:
     # target green callers
     - match:
@@ -229,12 +229,12 @@ host: store
 # load balance 80/20 between blue and green
 blue:
   replicas: 2
-  tag: "1.1.1"
+  tag: "1.2.0"
   weight: 80
 
 green:
   replicas: 1
-  tag: "1.2.0"
+  tag: "1.2.1"
 ```
 
 Save the above resource and apply it:
