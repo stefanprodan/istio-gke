@@ -9,8 +9,14 @@ curl -L https://git.io/getLatestIstio | sh -
 Navigate to `istio-x.x.x` dir and copy the Istio CLI in your bin:
 
 ```bash
-cd istio-1.0.2/
+cd istio-1.0.3/
 sudo cp ./bin/istioctl /usr/local/bin/istioctl
+```
+
+Apply the Istio CRDs:
+
+```bash
+kubectl apply -f ./install/kubernetes/helm/istio/templates/crds.yaml
 ```
 
 Create a service account and a cluster role binding for Tiller:
@@ -57,6 +63,16 @@ gateways:
     loadBalancerIP: "35.198.98.90"
     type: LoadBalancer
 
+pilot:
+  enabled: true
+  replicaCount: 1
+  autoscaleMin: 1
+  autoscaleMax: 1
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1024Mi
+
 grafana:
   enabled: true
   security:
@@ -73,6 +89,8 @@ servicegraph:
 
 tracing:
   enabled: true
+  jaeger:
+    tag: 1.7
 
 certmanager:
   enabled: true
