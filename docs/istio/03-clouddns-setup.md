@@ -48,7 +48,7 @@ gcloud dns record-sets transaction add --zone=istio \
 --name="${DOMAIN}" --ttl=300 --type=A ${GATEWAYIP}
 
 gcloud dns record-sets transaction add --zone=istio \
---name="www.${DOMAIN}" --ttl=300 --type=CNAME ${DOMAIN}
+--name="www.${DOMAIN}" --ttl=300 --type=A ${GATEWAYIP}
 
 gcloud dns record-sets transaction add --zone=istio \
 --name="*.${DOMAIN}" --ttl=300 --type=A ${GATEWAYIP}
