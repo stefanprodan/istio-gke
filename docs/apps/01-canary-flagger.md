@@ -85,6 +85,9 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: podinfo
+  # the maximum time in seconds for the canary deployment
+  # to make progress before it is rollback (default 600s)
+  progressDeadlineSeconds: 60
   # HPA reference (optional)
   autoscalerRef:
     apiVersion: autoscaling/v2beta1
@@ -268,6 +271,22 @@ Halt podinfo-primary.test advancement waiting for rollout to finish: 1 old repli
 Scaling down podinfo.test
 Promotion completed! podinfo.test
 ```
+### Alerting
+
+Flagger can be configured to send Slack notifications:
+
+```bash
+helm upgrade -i flagger flagger/flagger \
+--namespace=istio-system \
+--set slack.url=https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK \
+--set slack.channel=general \
+--set slack.user=flagger
+```
+
+Once configured with a Slack incoming webhook, Flagger will post messages when a canary deployment has been initialized,
+when a new revision has been detected and if the canary analysis failed or succeeded.
+
+![flagger-slack](https://raw.githubusercontent.com/stefanprodan/flagger/master/docs/screens/slack-notifications.png)
 
 Next: [A/B Testing with Helm](02-ab-testing-helm.md)
 
