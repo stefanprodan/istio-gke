@@ -1,5 +1,7 @@
 # Istio service mesh guides 
 
+![istio](https://github.com/stefanprodan/istio-gke/blob/master/docs/screens/istio-gcp-overview.png)
+
 [Istio GKE setup](/docs/istio/00-index.md)
 
 * [Prerequisites - client tools](/docs/istio/01-prerequisites.md)
