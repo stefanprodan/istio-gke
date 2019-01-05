@@ -20,7 +20,7 @@ helm upgrade -i flagger flagger/flagger \
 
 Flagger is compatible with Kubernetes >1.10.0 and Istio >1.0.0.
 
-![flagger-overview](https://raw.githubusercontent.com/stefanprodan/flagger/master/docs/diagrams/flagger-overview.png)
+![flagger-overview](https://raw.githubusercontent.com/stefanprodan/flagger/master/docs/diagrams/flagger-canary-overview.png)
 
 Gated canary promotion stages:
 
@@ -74,7 +74,7 @@ kubectl apply -f ${REPO}/artifacts/canaries/hpa.yaml
 Create a canary custom resource (replace example.com with your own domain):
 
 ```yaml
-apiVersion: flagger.app/v1alpha1
+apiVersion: flagger.app/v1alpha2
 kind: Canary
 metadata:
   name: podinfo
