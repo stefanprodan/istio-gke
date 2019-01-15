@@ -14,8 +14,7 @@ helm repo add flagger https://flagger.app
 # install or upgrade
 helm upgrade -i flagger flagger/flagger \
 --namespace=istio-system \
---set metricsServer=http://prometheus.istio-system:9090 \
---set controlLoopInterval=1m
+--set metricsServer=http://prometheus.istio-system:9090
 ```
 
 Flagger is compatible with Kubernetes >1.10.0 and Istio >1.0.0.
@@ -74,7 +73,7 @@ kubectl apply -f ${REPO}/artifacts/canaries/hpa.yaml
 Create a canary custom resource (replace example.com with your own domain):
 
 ```yaml
-apiVersion: flagger.app/v1alpha2
+apiVersion: flagger.app/v1alpha3
 kind: Canary
 metadata:
   name: podinfo
@@ -103,6 +102,8 @@ spec:
     hosts:
     - app.example.com
   canaryAnalysis:
+    # schedule interval (default 60s)
+    interval: 10s
     # max number of failed metric checks before rollback
     threshold: 5
     # max traffic percentage routed to canary
