@@ -17,9 +17,18 @@ helm upgrade -i flagger flagger/flagger \
 --set metricsServer=http://prometheus.istio-system:9090
 ```
 
-Flagger is compatible with Kubernetes >1.10.0 and Istio >1.0.0.
+Flagger is compatible with Kubernetes >1.11.0 and Istio >1.0.0.
 
 ![flagger-overview](https://raw.githubusercontent.com/stefanprodan/flagger/master/docs/diagrams/flagger-canary-overview.png)
+
+Flagger takes a Kubernetes deployment and optionally a horizontal pod autoscaler (HPA) and creates a series of objects 
+(Kubernetes deployments, ClusterIP services and Istio virtual services) to drive the canary analysis and promotion.
+
+A canary deployment is triggered by changes in any of the following objects:
+
+* Deployment PodSpec (container image, command, ports, env, resources, etc)
+* ConfigMaps mounted as volumes or mapped to environment variables
+* Secrets mounted as volumes or mapped to environment variables
 
 Gated canary promotion stages:
 
@@ -29,26 +38,28 @@ Gated canary promotion stages:
     * halt advancement if a rolling update is underway
     * halt advancement if pods are unhealthy
 * increase canary traffic weight percentage from 0% to 5% (step weight)
+* call webhooks and check results
 * check canary HTTP request success rate and latency
     * halt advancement if any metric is under the specified threshold
     * increment the failed checks counter
 * check if the number of failed checks reached the threshold
     * route all traffic to primary
     * scale to zero the canary deployment and mark it as failed
-    * wait for the canary deployment to be updated (revision bump) and start over
+    * wait for the canary deployment to be updated and start over
 * increase canary traffic weight by 5% (step weight) till it reaches 50% (max weight) 
     * halt advancement while canary request success rate is under the threshold
     * halt advancement while canary request duration P99 is over the threshold
     * halt advancement if the primary or canary deployment becomes unhealthy 
     * halt advancement while canary deployment is being scaled up/down by HPA
 * promote canary to primary
+    * copy ConfigMaps and Secrets from canary to primary
     * copy canary deployment spec template over primary
 * wait for primary rolling update to finish
     * halt advancement if pods are unhealthy
 * route all traffic to primary
 * scale to zero the canary deployment
 * mark rollout as finished
-* wait for the canary deployment to be updated (revision bump) and start over
+* wait for the canary deployment to be updated and start over
 
 You can change the canary analysis _max weight_ and the _step weight_ percentage in the Flagger's custom resource.
 
