@@ -80,6 +80,12 @@ kubectl apply -f ${REPO}/artifacts/canaries/deployment.yaml
 kubectl apply -f ${REPO}/artifacts/canaries/hpa.yaml
 ```
 
+Deploy the load testing service to generate traffic during the canary analysis:
+
+```bash
+kubectl -n test apply -f ${REPO}/artifacts/loadtester/deployment.yaml
+kubectl -n test apply -f ${REPO}/artifacts/loadtester/service.yaml
+```
 
 Create a canary custom resource (replace example.com with your own domain):
 
@@ -109,12 +115,13 @@ spec:
     # Istio gateways (optional)
     gateways:
     - public-gateway.istio-system.svc.cluster.local
+    - mesh
     # Istio virtual service host names (optional)
     hosts:
     - app.example.com
   canaryAnalysis:
     # schedule interval (default 60s)
-    interval: 10s
+    interval: 1m
     # max number of failed metric checks before rollback
     threshold: 5
     # max traffic percentage routed to canary
@@ -124,16 +131,23 @@ spec:
     # percentage (0-100)
     stepWeight: 10
     metrics:
-    - name: istio_requests_total
+    - name: request-success-rate
       # minimum req success rate (non 5xx responses)
       # percentage (0-100)
       threshold: 99
       interval: 1m
-    - name: istio_request_duration_seconds_bucket
+    - name: request-duration
       # maximum req duration P99
       # milliseconds
       threshold: 500
       interval: 30s
+    # generate traffic during analysis
+    webhooks:
+      - name: load-test
+        url: http://flagger-loadtester.test/
+        timeout: 5s
+        metadata:
+          cmd: "hey -z 1m -q 10 -c 2 http://podinfo.test:9898/"
 ```
 
 Save the above resource as podinfo-canary.yaml and then apply it:
@@ -149,6 +163,7 @@ After a couple of seconds Flagger will create the canary objects:
 deployment.apps/podinfo
 horizontalpodautoscaler.autoscaling/podinfo
 canary.flagger.app/podinfo
+
 # generated 
 deployment.apps/podinfo-primary
 horizontalpodautoscaler.autoscaling/podinfo-primary
@@ -164,7 +179,7 @@ Trigger a canary deployment by updating the container image:
 
 ```bash
 kubectl -n test set image deployment/podinfo \
-podinfod=quay.io/stefanprodan/podinfo:1.2.1
+podinfod=quay.io/stefanprodan/podinfo:1.4.1
 ```
 
 Flagger detects that the deployment revision changed and starts a new rollout:
@@ -196,6 +211,21 @@ Events:
   Warning  Synced  15s   flagger  Waiting for podinfo-primary.test rollout to finish: 1 of 2 updated replicas are available
   Normal   Synced  5s    flagger  Promotion completed! Scaling down podinfo.test
 ```
+
+**Note** that if you apply new changes to the deployment during the canary analysis, Flagger will restart the analysis.
+
+You can monitor all canaries with:
+
+```bash
+watch kubectl get canaries --all-namespaces
+
+NAMESPACE   NAME      STATUS        WEIGHT   LASTTRANSITIONTIME
+test        podinfo   Progressing   15       2019-01-16T14:05:07Z
+prod        frontend  Succeeded     0        2019-01-15T16:15:07Z
+prod        backend   Failed        0        2019-01-14T17:05:07Z
+```
+
+### Automated rollback
 
 During the canary analysis you can generate HTTP 500 errors and high latency to test if Flagger pauses the rollout.
 
