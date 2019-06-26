@@ -39,4 +39,17 @@ Install the `helm` command-line tool:
 brew install kubernetes-helm
 ```
 
+Create Tiller service account:
+
+```bash
+kubectl --namespace kube-system create sa tiller
+kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+```
+
+Install Tiller:
+
+```bash
+helm init --service-account tiller --upgrade --wait
+```
+
 Next: [GKE cluster setup](02-gke-setup.md)

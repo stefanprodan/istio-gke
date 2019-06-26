@@ -68,7 +68,7 @@ You can change the canary analysis _max weight_ and the _step weight_ percentage
 Create a test namespace with Istio sidecar injection enabled:
 
 ```bash
-export REPO=https://raw.githubusercontent.com/stefanprodan/flagger/master
+export REPO=https://raw.githubusercontent.com/weaveworks/flagger/master
 
 kubectl apply -f ${REPO}/artifacts/namespaces/test.yaml
 ```
@@ -112,6 +112,10 @@ spec:
   service:
     # container port
     port: 9898
+    trafficPolicy:
+      tls:
+        # use ISTIO_MUTUAL when mTLS is enabled
+        mode: DISABLE
     # Istio gateways (optional)
     gateways:
     - public-gateway.istio-system.svc.cluster.local
@@ -147,7 +151,7 @@ spec:
         url: http://flagger-loadtester.test/
         timeout: 5s
         metadata:
-          cmd: "hey -z 1m -q 10 -c 2 http://podinfo.test:9898/"
+          cmd: "hey -z 1m -q 10 -c 2 http://podinfo-canary.test:9898/"
 ```
 
 Save the above resource as podinfo-canary.yaml and then apply it:

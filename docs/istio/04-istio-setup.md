@@ -1,105 +1,123 @@
 # Install Istio with Helm
 
-Download the latest Istio release:
+Add Istio Helm repository:
 
 ```bash
-curl -L https://git.io/getLatestIstio | sh -
+export ISTIO_VER="1.2.0"
+
+helm repo add istio.io https://storage.googleapis.com/istio-release/releases/${ISTIO_VER}/charts
 ```
 
-Navigate to `istio-x.x.x` dir and copy the Istio CLI in your bin:
+Installing the Istio custom resource definitions:
 
 ```bash
-cd istio-1.0.3/
-sudo cp ./bin/istioctl /usr/local/bin/istioctl
+helm upgrade -i istio-init istio.io/istio-init --wait --namespace istio-system
 ```
 
-Apply the Istio CRDs:
+Wait for Istio CRDs to be deployed:
 
 ```bash
-kubectl apply -f ./install/kubernetes/helm/istio/templates/crds.yaml
+kubectl -n istio-system wait --for=condition=complete job/istio-init-crd-10
+kubectl -n istio-system wait --for=condition=complete job/istio-init-crd-11
+kubectl -n istio-system wait --for=condition=complete job/istio-init-crd-12
 ```
 
-Create a service account and a cluster role binding for Tiller:
+Create a secret for Grafana credentials:
 
 ```bash
-kubectl apply -f ./install/kubernetes/helm/helm-service-account.yaml
+# generate a random password
+PASSWORD=$(head -c 12 /dev/urandom | shasum| cut -d' ' -f1)
+
+kubectl -n istio-system create secret generic grafana \
+--from-literal=username=admin \
+--from-literal=passphrase="$PASSWORD"
 ```
 
-Deploy Tiller in the `kube-system` namespace:
-
-```bash
-helm init --service-account tiller
-```
-
-Find the GKE IP ranges:
-
-```bash
-gcloud container clusters describe istio --zone=europe-west3-a \
-| grep -e clusterIpv4Cidr -e servicesIpv4Cidr
-```
-
-You'll be using the IP ranges to allow unrestricted egress traffic for services running inside the service mesh.
-
-Configure Istio with Prometheus, Jaeger, and cert-manager:
+Configure Istio with Prometheus, Jaeger, and cert-manager and set your load balancer IP:
 
 ```yaml
-global:
-  nodePort: false
-  proxy:
-    # replace with your GKE IP ranges
-    includeIPRanges: "10.28.0.0/14,10.7.240.0/20"
-
-sidecarInjectorWebhook:
-  enabled: true
-  enableNamespacesByDefault: false
-
+# ingress configuration
 gateways:
   enabled: true
   istio-ingressgateway:
-    replicaCount: 2
-    autoscaleMin: 2
-    autoscaleMax: 3
-    # replace with your Istio Gateway IP
-    loadBalancerIP: "35.198.98.90"
     type: LoadBalancer
+    loadBalancerIP: "35.198.98.90"
+    autoscaleEnabled: true
+    autoscaleMax: 2
+    
+# common settings
+global:
+  # sidecar settings
+  proxy:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        cpu: 2000m
+        memory: 256Mi
+  controlPlaneSecurityEnabled: false
+  mtls:
+    enabled: false
+  useMCP: true
 
+# pilot configuration
 pilot:
   enabled: true
-  replicaCount: 1
-  autoscaleMin: 1
-  autoscaleMax: 1
+  autoscaleEnabled: true
+  sidecar: true
   resources:
     requests:
-      cpu: 500m
-      memory: 1024Mi
+      cpu: 10m
+      memory: 128Mi
 
+# sidecar-injector webhook configuration
+sidecarInjectorWebhook:
+  enabled: true
+
+# security configuration
+security:
+  enabled: true
+
+# galley configuration
+galley:
+  enabled: true
+
+# mixer configuration
+mixer:
+  policy:
+    enabled: false
+    replicaCount: 1
+    autoscaleEnabled: true
+  telemetry:
+    enabled: true
+    replicaCount: 1
+    autoscaleEnabled: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 128Mi
+
+# addon prometheus configuration
+prometheus:
+  enabled: true
+  scrapeInterval: 5s
+
+# addon jaeger tracing configuration
+tracing:
+  enabled: true
+
+# addon grafana configuration
 grafana:
   enabled: true
   security:
     enabled: true
-    adminUser: admin
-    # change the password
-    adminPassword: admin
-
-prometheus:
-  enabled: true
-
-servicegraph:
-  enabled: true
-
-tracing:
-  enabled: true
-  jaeger:
-    tag: 1.7
-
-certmanager:
-  enabled: true
 ```
 
 Save the above file as `my-istio.yaml` and install Istio with Helm:
 
 ```bash
-helm upgrade --install istio ./install/kubernetes/helm/istio \
+helm upgrade --install istio istio.io/istio \
 --namespace=istio-system \
 -f ./my-istio.yaml
 ```
@@ -107,7 +125,7 @@ helm upgrade --install istio ./install/kubernetes/helm/istio \
 Verify that Istio workloads are running:
 
 ```bash
-kubectl -n istio-system get pods
+watch kubectl -n istio-system get pods
 ```
 
 Next: [Configure Istio Gateway with Let's Encrypt wildcard certificate](05-letsencrypt-setup.md)

@@ -13,9 +13,9 @@ gcloud container clusters create istio \
 --machine-type=n1-highcpu-4 \
 --preemptible \
 --no-enable-cloud-logging \
---disk-size=30 \
+--disk-size=50 \
 --enable-autorepair \
---scopes=gke-default,compute-rw,storage-rw
+--scopes=gke-default
 ```
 
 The above command will create a default node pool consisting of `n1-highcpu-4` (vCPU: 4, RAM 3.60GB, DISK: 30GB) preemptible VMs.
