@@ -66,6 +66,33 @@ kubectl create secret generic cert-manager-credentials \
 --namespace=istio-system
 ```
 
+Install cert-manager's CRDs:
+
+```bash
+CERT_REPO=https://raw.githubusercontent.com/jetstack/cert-manager
+
+kubectl apply -f ${CERT_REPO}/release-0.7/deploy/manifests/00-crds.yaml
+```
+
+Create the cert-manager namespace and disable resource validation:
+
+```bash
+kubectl create namespace cert-manager
+
+kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
+```
+
+Install cert-manager with Helm:
+
+```bash
+helm repo add jetstack https://charts.jetstack.io && \
+helm repo update && \
+helm upgrade -i cert-manager \
+--namespace cert-manager \
+--version v0.7.0 \
+jetstack/cert-manager
+```
+
 Create a letsencrypt issuer for CloudDNS (replace `email@example.com` with a valid email address and `my-gcp-project` with your project ID):
 
 ```yaml
@@ -124,13 +151,15 @@ Save the above resource as of-cert.yaml and then apply it:
 kubectl apply -f ./of-cert.yaml
 ```
 
-In a couple of seconds cert-manager should fetch a wildcard certificate from letsencrypt.org:
+In a couple of minutes cert-manager should fetch a wildcard certificate from letsencrypt.org:
 
-```bash
-kubectl -n istio-system logs deployment/certmanager -f
+```text
+kubectl -n istio-system describe certificate istio-gateway
 
-Certificate issued successfully
-Certificate istio-system/istio-gateway scheduled for renewal in 1438 hours
+Events:
+  Type    Reason         Age    From          Message
+  ----    ------         ----   ----          -------
+  Normal  CertIssued     1m52s  cert-manager  Certificate issued successfully
 ```
 
 Recreate Istio ingress gateway pods:
