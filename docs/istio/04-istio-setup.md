@@ -3,7 +3,7 @@
 Add Istio Helm repository:
 
 ```bash
-export ISTIO_VER="1.2.0"
+export ISTIO_VER="1.2.3"
 
 helm repo add istio.io https://storage.googleapis.com/istio-release/releases/${ISTIO_VER}/charts
 ```
