@@ -4,7 +4,7 @@ Create a cluster with three nodes using the latest Kubernetes version:
 
 ```bash
 k8s_version=$(gcloud container get-server-config --format=json \
-| jq -r '.validNodeVersions[0]')
+| jq -r '.validMasterVersions[0]')
 
 gcloud container clusters create istio \
 --cluster-version=${k8s_version} \
