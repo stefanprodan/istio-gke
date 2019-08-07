@@ -39,26 +39,25 @@ Save the above resource as of-mtls.yaml and then apply it:
 kubectl apply -f ./of-mtls.yaml
 ```
 
-Allow plaintext traffic to OpenFaaS Gateway:
+Allow plaintext traffic to NATS:
 
 ```yaml
-apiVersion: authentication.istio.io/v1alpha1
-kind: Policy
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
 metadata:
-  name: permissive
-  namespace: openfaas
+    name: "nats-no-mtls"
+    namespace: {{ .Release.Namespace }}
 spec:
-  targets:
-  - name: gateway
-  peers:
-  - mtls:
-      mode: PERMISSIVE
+    host: "nats.openfaas.svc.cluster.local"
+    trafficPolicy:
+        tls:
+            mode: DISABLE
 ```
 
-Save the above resource as of-gateway-mtls.yaml and then apply it:
+Save the above resource as of-nats-no-mtls.yaml and then apply it:
 
 ```bash
-kubectl apply -f ./of-gateway-mtls.yaml
+kubectl apply -f ./of-nats-no-mtls.yaml
 ```
 
 Enable mTLS on `openfaas-fn` namespace:
