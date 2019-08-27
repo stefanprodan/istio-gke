@@ -46,7 +46,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
     name: "nats-no-mtls"
-    namespace: {{ .Release.Namespace }}
+    namespace: openfaas
 spec:
     host: "nats.openfaas.svc.cluster.local"
     trafficPolicy:
